@@ -1,4 +1,4 @@
-module com.example.lab52025 {
+module application {
     requires javafx.controls;
     requires javafx.fxml;
     requires javafx.web;
@@ -9,6 +9,6 @@ module com.example.lab52025 {
     requires org.kordamp.bootstrapfx.core;
     requires eu.hansolo.tilesfx;
 
-    opens com.example.lab52025 to javafx.fxml;
-    exports com.example.lab52025;
+    opens application to javafx.fxml;
+    exports application;
 }

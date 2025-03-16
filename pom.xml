@@ -4,10 +4,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.example</groupId>
-    <artifactId>Lab5-2025</artifactId>
+    <groupId>application</groupId>
+    <artifactId>LOG_Labo5</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <name>Lab5-2025</name>
+    <name>LOG_Labo5</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -106,7 +106,7 @@
                         <!-- Default configuration for running with: mvn clean javafx:run -->
                         <id>default-cli</id>
                         <configuration>
-                            <mainClass>com.example.lab52025/com.example.lab52025.HelloApplication</mainClass>
+                            <mainClass>application/application.ApplicationMain</mainClass>
                             <launcher>app</launcher>
                             <jlinkZipName>app</jlinkZipName>
                             <jlinkImageName>app</jlinkImageName>

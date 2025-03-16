@@ -1,0 +1,36 @@
+@startuml
+autonumber
+title Diagramme de séquence de l'annulation d'une commande zoom
+actor Utilisateur
+participant "GestionnaireInterface" as GUI
+participant "CommandManager" as CmdMgr
+participant "ZoomCommand" as Cmd
+participant "Perspective" as Model
+participant "VueAbstraite" as Vue
+
+Utilisateur -> GUI : clique sur bouton "Annuler"
+activate GUI
+    GUI -> CmdMgr : undo()
+    activate CmdMgr
+        CmdMgr -> CmdMgr : command = commandesExecutees.pop()
+        CmdMgr -> Cmd : undo()
+        activate Cmd
+            Cmd -> Model : setFacteurEchelle(ancienFacteur)
+            activate Model
+                Model -> Model : notifyObservers()
+                activate Model
+                    Model -> Vue : update()
+                    activate Vue
+                        Vue -> Vue : dessiner()
+                    deactivate Vue
+                deactivate Model
+            deactivate Model
+            Cmd --> CmdMgr
+        deactivate Cmd
+
+        CmdMgr -> CmdMgr : commandesAnnulees.push(command)
+        CmdMgr --> GUI
+    deactivate CmdMgr
+    GUI --> Utilisateur : affichage mis à jour
+deactivate GUI
+@enduml

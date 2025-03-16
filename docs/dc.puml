@@ -1,0 +1,258 @@
+@startuml
+'Architecture MVC avec patrons de conception
+title Diagramme de classe
+
+package "modele" {
+  class Image implements Subject {
+    -chemin: String
+    -image: BufferedImage
+    +chargerImage(chemin : String)
+    +getBufferedImage(): BufferedImage
+    +notifyObservers()
+  }
+  note right of Image
+    Représente l'image originale
+    Sujet dans le pattern Observer
+  endnote
+
+  class Perspective implements Subject, Serializable {
+    -facteurEchelle: double
+    -positionX: int
+    -positionY: int
+    -image: Image
+    +Perspective(image: Image)
+    +setFacteurEchelle(facteur: double)
+    +setPosition(x: int, y: int)
+    +getImage(): Image
+    +getFacteurEchelle(): double
+    +getPositionX(): int
+    +getPositionY(): int
+    +createMemento(): PerspectiveMemento
+    +setMemento(memento: PerspectiveMemento)
+    +notifyObservers()
+  }
+  note left of Perspective
+    Contient les paramètres d'affichage de l'image
+    Sérialisable pour la persistance
+    Utilise Memento pour sauvegarder son état
+  endnote
+
+  interface Subject {
+    +attach(observer: Observer)
+    +detach(observer: Observer)
+    +notifyObservers()
+  }
+  note right of Subject
+    Pattern Observer: notifie les observateurs
+    lors des changements dans le modèle
+  endnote
+}
+
+package "vue" {
+  interface Observer {
+    +update()
+  }
+  note left of Observer
+    Interface du pattern Observer
+    permettant aux vues de recevoir
+    les notifications du modèle
+  endnote
+
+  abstract class VueAbstraite implements Observer {
+    #perspective: Perspective
+    #canvas: Canvas
+    +VueAbstraite(perspective: Perspective)
+    +update()
+    #dessiner()
+  }
+
+  class VueThumbnail extends VueAbstraite {
+    +VueThumbnail(perspective: Perspective)
+    +dessiner()
+  }
+
+  abstract class VueInteractive extends VueAbstraite {
+    #controleSouris: ControleSouris
+    +setControleSouris(controle: ControleSouris)
+  }
+
+  class VuePrincipale extends VueInteractive {
+    +VuePrincipale(perspective: Perspective)
+    +dessiner()
+  }
+
+  class VueSecondaire extends VueInteractive {
+    +VueSecondaire(perspective: Perspective)
+    +dessiner()
+  }
+  note top of VueSecondaire
+    Les vues sont des observateurs
+    qui se mettent à jour automatiquement
+    lorsque le modèle change
+  endnote
+}
+
+package "controleur" {
+  interface ControleSouris {
+    +gererMousePressed(evt: MouseEvent)
+    +gererMouseDragged(evt: MouseEvent)
+    +gererMouseReleased(evt: MouseEvent)
+  }
+  note right of ControleSouris
+    Pattern Strategy: permet de changer
+    dynamiquement le comportement
+    des vues face aux événements souris
+  endnote
+
+  class ControleZoom {
+    -perspective: Perspective
+    -commandManager: CommandManager
+    +ControleZoom(perspective: Perspective)
+    +gererMousePressed(evt: MouseEvent)
+    +gererMouseDragged(evt: MouseEvent)
+    +gererMouseReleased(evt: MouseEvent)
+  }
+
+  class ControleTranslation {
+    -perspective: Perspective
+    -commandManager: CommandManager
+    +ControleTranslation(perspective: Perspective)
+    +gererMousePressed(evt: MouseEvent)
+    +gererMouseDragged(evt: MouseEvent)
+    +gererMouseReleased(evt: MouseEvent)
+  }
+}
+
+package "commande" {
+  interface Command {
+    +execute()
+    +undo()
+  }
+  note right of Command
+    Pattern Command: encapsule une action
+    dans un objet pour pouvoir l'exécuter
+    ou l'annuler ultérieurement
+  endnote
+
+  class ZoomCommand implements Command {
+    -perspective: Perspective
+    -ancienFacteur: double
+    -nouveauFacteur: double
+    +ZoomCommand(perspective: Perspective, nouveauFacteur: double)
+    +execute()
+    +undo()
+  }
+
+  class TranslationCommand implements Command {
+    -perspective: Perspective
+    -ancienX: int
+    -ancienY: int
+    -nouveauX: int
+    -nouveauY: int
+    +TranslationCommand(perspective: Perspective, nouveauX: int, nouveauY: int)
+    +execute()
+    +undo()
+  }
+
+  class CommandManager << Singleton >> {
+    -static instance: CommandManager
+    -commandesExecutees: Stack<Command>
+    -commandesAnnulees: Stack<Command>
+    -CommandManager()
+    +static getInstance(): CommandManager
+    +executeCommand(command: Command)
+    +undo()
+    +redo()
+    +clearRedoStack()
+  }
+  note right of CommandManager
+    Pattern Singleton: assure une instance unique
+    Gère l'historique des commandes
+    et permet d'annuler les opérations
+  endnote
+}
+
+package "memento" {
+  class PerspectiveMemento implements Serializable {
+    -facteurEchelle: double
+    -positionX: int
+    -positionY: int
+    +PerspectiveMemento(facteur: double, x: int, y: int)
+    +getFacteurEchelle(): double
+    +getPositionX(): int
+    +getPositionY(): int
+  }
+  note right of PerspectiveMemento
+    Pattern Memento: capture l'état interne
+    d'une perspective pour restauration future
+  endnote
+
+  class Sauvegarde {
+    +sauvegarderEtat(perspectives: List<Perspective>, fichier: String)
+    +chargerEtat(fichier: String): List<Perspective>
+  }
+  note right of Sauvegarde
+    Utilise la sérialisation Java pour
+    sauvegarder/charger les perspectives
+  endnote
+}
+
+package "application" {
+  class ApplicationMain {
+    +main(args: String[])
+    +demarrer()
+  }
+  note right of ApplicationMain
+    Point d'entrée unique
+    Initialise l'application
+  endnote
+
+  class ApplicationController {
+    -modeles: List<Perspective>
+    -vues: Map<String, VueAbstraite>
+    -commandManager: CommandManager
+    +initialiserModeles()
+    +initialiserVues()
+    +connecterVuesEtModeles()
+  }
+  note left of ApplicationController
+    Coordonne les composants MVC
+    Initialise les connexions entre vues et modèles
+  endnote
+
+  class GestionnaireInterface {
+    -frames: List<JFrame>
+    +creerFenetre(titre: String): JFrame
+    +creerMenu(frame: JFrame)
+    +ajouterVue(frame: JFrame, vue: VueAbstraite)
+  }
+  note right of GestionnaireInterface
+    Gestion de l'interface utilisateur
+    Création des fenêtres, menus, etc.
+  endnote
+}
+
+' Relations
+Subject "1" -- "0..*" Observer : observe >
+Image "1" *-- "0..*" Perspective
+Perspective -- PerspectiveMemento : crée >
+
+' Nouvelles relations pour VueAbstraite
+VueAbstraite -- Perspective : observe >
+VueInteractive -- ControleSouris : utilise >
+
+' Relations de contrôleur
+ControleSouris <|.. ControleZoom
+ControleSouris <|.. ControleTranslation
+CommandManager "1" -- "*" Command : gère >
+ControleZoom -- CommandManager : utilise >
+ControleTranslation -- CommandManager : utilise >
+
+' Relations d'application
+ApplicationController -- Sauvegarde : utilise >
+ApplicationController -- CommandManager : utilise >
+ApplicationController "1" o-- "*" Perspective
+ApplicationMain -- ApplicationController : utilise >
+ApplicationMain -- GestionnaireInterface : utilise >
+note "Architecture MVC:\n- Modèle: Image, Perspective\n- Vue: VueAbstraite et ses sous-classes\n- Contrôleur: ControleZoom, ControleTranslation" as N1
+@enduml

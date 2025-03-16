@@ -1,0 +1,47 @@
+@startuml
+title Diagramme de séquence de la commande zoom
+autonumber
+
+actor Utilisateur
+participant "VuePrincipale" as Vue
+participant "ControleZoom" as Controle
+participant "CommandManager" as CmdMgr
+participant "ZoomCommand" as Cmd
+participant "Perspective" as Model
+
+Utilisateur -> Vue : Interaction souris
+activate Vue
+    Vue -> Controle : gererMouseDragged(evt)
+    activate Controle
+        Controle -> Controle : calculer nouveau facteur d'échelle
+        Controle -> CmdMgr : executeCommand(cmd)
+        activate CmdMgr
+            CmdMgr -> Cmd : <<create>>\n(perspective, nouveauFacteur)
+            activate Cmd
+                Cmd --> CmdMgr
+            deactivate Cmd
+
+            CmdMgr -> Cmd : execute()
+            activate Cmd
+                Cmd -> Model : setFacteurEchelle(nouveauFacteur)
+                activate Model
+                    Model -> Model : notifyObservers()
+                    activate Model
+                        Model -> Vue : update()
+                        activate Vue
+                            Vue -> Vue : dessiner()
+                        deactivate Vue
+                    deactivate Model
+                deactivate Model
+                Cmd --> CmdMgr
+            deactivate Cmd
+
+            CmdMgr -> CmdMgr : ajouterCommande(cmd)
+            CmdMgr -> CmdMgr : clearRedoStack()
+            CmdMgr --> Controle
+        deactivate CmdMgr
+        Controle --> Vue
+    deactivate Controle
+deactivate Vue
+
+@enduml

@@ -6,6 +6,7 @@ package "modele" {
   class Image implements Subject {
     -chemin: String
     -image: BufferedImage
+    -observers: List<Observer>
     +chargerImage(chemin : String)
     +getBufferedImage(): BufferedImage
     +notifyObservers()

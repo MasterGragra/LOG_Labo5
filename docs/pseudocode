@@ -1,0 +1,205 @@
+/**
+ * Interface qui définit les méthodes nécessaires pour le pattern Observer
+ * - Permet à un objet d'attacher, détacher et notifier ses observateurs
+ * - Utilisée par les objets observables (comme Perspective) qui doivent
+ *   informer leurs observateurs des changements d'état
+ */
+INTERFACE Subject
+    /**
+     * Attache un observateur à ce sujet
+     * @param observer L'observateur à attacher
+     */
+    PUBLIC VOID attach(Observer observer)
+
+    /**
+     * Détache un observateur de ce sujet
+     * @param observer L'observateur à détacher
+     */
+    PUBLIC VOID detach(Observer observer)
+
+    /**
+     * Notifie tous les observateurs attachés d'un changement d'état
+     */
+    PUBLIC VOID notifyObservers()
+FIN INTERFACE
+
+/**
+ * Classe qui représente une image à afficher dans l'application
+ * - Encapsule les données d'une image et ses métadonnées
+ * - Implémente Serializable pour permettre la sauvegarde
+ */
+CLASSE Image IMPLÉMENTE Serializable
+    // Attributs
+    PRIVÉ BufferedImage donnees
+    PRIVÉ String nom
+    PRIVÉ int largeur
+    PRIVÉ int hauteur
+
+    // Constructeur
+    CONSTRUCTEUR Image(String chemin)
+        chargerImage(chemin)
+        this.nom = extraireNomFichier(chemin)
+    FIN CONSTRUCTEUR
+
+    // Méthodes privées
+    PRIVÉ VOID chargerImage(String chemin)
+        ESSAYER
+            this.donnees = ImageIO.read(new File(chemin))
+            this.largeur = donnees.getWidth()
+            this.hauteur = donnees.getHeight()
+        ATTRAPER (IOException e)
+            // Gestion de l'erreur de chargement
+            this.donnees = creerImageVide()
+            this.largeur = 0
+            this.hauteur = 0
+        FIN ESSAYER
+    FIN MÉTHODE
+
+    PRIVÉ String extraireNomFichier(String chemin)
+        // Extrait le nom du fichier à partir du chemin complet
+        RETOURNER nouveau File(chemin).getName()
+    FIN MÉTHODE
+
+    PRIVÉ BufferedImage creerImageVide()
+        RETOURNER nouvelle BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB)
+    FIN MÉTHODE
+
+    // Getters
+    PUBLIC BufferedImage getDonnees()
+        RETOURNER donnees
+    FIN MÉTHODE
+
+    PUBLIC String getNom()
+        RETOURNER nom
+    FIN MÉTHODE
+
+    PUBLIC int getLargeur()
+        RETOURNER largeur
+    FIN MÉTHODE
+
+    PUBLIC int getHauteur()
+        RETOURNER hauteur
+    FIN MÉTHODE
+
+    // Méthodes utilitaires
+    PUBLIC boolean estValide()
+        RETOURNER donnees != null ET largeur > 0 ET hauteur > 0
+    FIN MÉTHODE
+FIN CLASSE
+
+/**
+ * Classe qui capture et stocke l'état d'une Perspective
+ * - Implémente Serializable pour permettre la sauvegarde
+ * - Utilisée dans le pattern Memento pour sauvegarder et restaurer l'état
+ * - Stocke le facteur d'échelle et la position (x, y) d'une Perspective
+ */
+CLASSE PerspectiveMemento IMPLÉMENTE Serializable
+    // Attributs
+    PRIVÉ double facteurEchelle
+    PRIVÉ int positionX
+    PRIVÉ int positionY
+
+    // Constructeur
+    CONSTRUCTEUR PerspectiveMemento(double facteur, int x, int y)
+        this.facteurEchelle = facteur
+        this.positionX = x
+        this.positionY = y
+    FIN CONSTRUCTEUR
+
+    // Getters - pas de setters car un memento est immuable
+    PUBLIC double getFacteurEchelle()
+        RETOURNER facteurEchelle
+    FIN MÉTHODE
+
+    PUBLIC int getPositionX()
+        RETOURNER positionX
+    FIN MÉTHODE
+
+    PUBLIC int getPositionY()
+        RETOURNER positionY
+    FIN MÉTHODE
+FIN CLASSE
+
+/**
+ * Classe qui gère la visualisation d'une image avec des paramètres d'affichage
+ * - Implémente Subject pour notifier les vues des changements (pattern Observer)
+ * - Implémente Serializable pour permettre la sauvegarde de l'état
+ * - Utilise le pattern Memento pour gérer les sauvegardes d'état
+ */
+CLASSE Perspective IMPLÉMENTE Subject, Serializable
+    // Attributs
+    PRIVÉ double facteurEchelle
+    PRIVÉ int positionX
+    PRIVÉ int positionY
+    PRIVÉ Image image
+    PRIVÉ List<Observer> observers = nouvelle ArrayList<>()
+
+    // Constructeur
+    CONSTRUCTEUR Perspective(Image image)
+        this.image = image
+        this.facteurEchelle = 1.0
+        this.positionX = 0
+        this.positionY = 0
+    FIN CONSTRUCTEUR
+
+    // Méthodes du pattern Memento
+    PUBLIC PerspectiveMemento createMemento()
+        RETOURNER nouveau PerspectiveMemento(facteurEchelle, positionX, positionY)
+    FIN MÉTHODE
+
+    PUBLIC VOID setMemento(PerspectiveMemento memento)
+        this.facteurEchelle = memento.getFacteurEchelle()
+        this.positionX = memento.getPositionX()
+        this.positionY = memento.getPositionY()
+        notifyObservers()
+    FIN MÉTHODE
+
+    // Méthodes du pattern Observer
+    @OVERRIDE
+    PUBLIC VOID attach(Observer observer)
+        SI NON observers.contains(observer) ALORS
+            observers.add(observer)
+        FIN SI
+    FIN MÉTHODE
+
+    @OVERRIDE
+    PUBLIC VOID detach(Observer observer)
+        observers.remove(observer)
+    FIN MÉTHODE
+
+    @OVERRIDE
+    PUBLIC VOID notifyObservers()
+        POUR CHAQUE Observer observer DANS observers FAIRE
+            observer.update(this)
+        FIN POUR
+    FIN MÉTHODE
+
+    // Setters avec notification
+    PUBLIC VOID setFacteurEchelle(double facteur)
+        this.facteurEchelle = facteur
+        notifyObservers()
+    FIN MÉTHODE
+
+    PUBLIC VOID setPosition(int x, int y)
+        this.positionX = x
+        this.positionY = y
+        notifyObservers()
+    FIN MÉTHODE
+
+    // Getters
+    PUBLIC Image getImage()
+        RETOURNER image
+    FIN MÉTHODE
+
+    PUBLIC double getFacteurEchelle()
+        RETOURNER facteurEchelle
+    FIN MÉTHODE
+
+    PUBLIC int getPositionX()
+        RETOURNER positionX
+    FIN MÉTHODE
+
+    PUBLIC int getPositionY()
+        RETOURNER positionY
+    FIN MÉTHODE
+FIN CLASSE

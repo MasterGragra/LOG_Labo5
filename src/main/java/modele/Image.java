@@ -8,7 +8,7 @@ import java.util.List;
 import javax.imageio.ImageIO;
 import vue.Observer;
 
-/*
+/**
     * Classe représentant une image
  */
 public class Image implements Subject {
@@ -20,7 +20,7 @@ public class Image implements Subject {
         // Constructeur par défaut
     }
 
-    /*
+    /**
         * Charge une image à partir d'un fichier
      */
     public void chargerImage(String chemin) throws IOException {
@@ -29,14 +29,14 @@ public class Image implements Subject {
         notifyObservers(); // Notification des observateurs
     }
 
-    /*
+    /**
         * Retourne le chemin du fichier image
      */
     public BufferedImage getBufferedImage() {
         return image;
     }
 
-    /*
+    /**
         * Ajoute un observateur à la liste
      */
     @Override
@@ -44,7 +44,7 @@ public class Image implements Subject {
         observers.add(observer);
     }
 
-    /*
+    /**
         * Retire un observateur de la liste
      */
     @Override
@@ -52,7 +52,7 @@ public class Image implements Subject {
         observers.remove(observer);
     }
 
-    /*
+    /**
         * Notifie tous les observateurs
      */
     @Override

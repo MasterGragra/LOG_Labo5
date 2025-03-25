@@ -51,7 +51,7 @@ package "modele" {
 
 package "vue" {
   interface Observer {
-    +update()
+    +update(parameter: float)
   }
   note left of Observer
     Interface du pattern Observer

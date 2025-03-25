@@ -6,17 +6,26 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import vue.Observer;
 
+/**
+ * Classe de test pour la classe Image
+ */
 class ImageTest {
 
     private Image image;
     private MockObserver observer;
 
+    /**
+     * Initialisation des attributs
+     */
     @BeforeEach
     public void setUp() {
         image = new Image();
         observer = new MockObserver();
     }
 
+    /**
+     * Test de la méthode chargerImage
+     */
     @Test
     public void testChargerImage() throws IOException {
         // Arrange
@@ -29,6 +38,9 @@ class ImageTest {
         assertNotNull(image.getBufferedImage(), "L'image chargée ne devrait pas être null");
     }
 
+    /**
+     * Test de la méthode attach, detach et notifyObservers
+     */
     @Test
     public void testAttachDetach() {
         // Attach
@@ -58,7 +70,7 @@ class ImageTest {
         private boolean notifie = false;
 
         @Override
-        public void update(float parametre) {
+        public void update(float parameter) {
             notifie = true;
         }
 

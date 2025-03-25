@@ -1,6 +1,8 @@
 package vue;
 
+import modele.Subject;
+
 // Interface Observateur
 public interface Observer {
-    void update(float parameter);
+    void update(Subject parameter);
 }

@@ -9,6 +9,8 @@ package "modele" {
     -observers: List<Observer>
     +chargerImage(chemin : String)
     +getBufferedImage(): BufferedImage
+    +attach(observer: Observer)
+    +detach(observer: Observer)
     +notifyObservers()
   }
   note right of Image
@@ -21,15 +23,18 @@ package "modele" {
     -positionX: int
     -positionY: int
     -image: Image
+    -observers: List<Observer>
     +Perspective(image: Image)
+    +createMemento(): PerspectiveMemento
+    +setMemento(memento: PerspectiveMemento)
     +setFacteurEchelle(facteur: double)
     +setPosition(x: int, y: int)
     +getImage(): Image
     +getFacteurEchelle(): double
     +getPositionX(): int
     +getPositionY(): int
-    +createMemento(): PerspectiveMemento
-    +setMemento(memento: PerspectiveMemento)
+    +attach(observer: Observer)
+    +detach(observer: Observer)
     +notifyObservers()
   }
   note left of Perspective
@@ -51,7 +56,7 @@ package "modele" {
 
 package "vue" {
   interface Observer {
-    +update(parameter: float)
+    +update(parameter: Subject)
   }
   note left of Observer
     Interface du pattern Observer

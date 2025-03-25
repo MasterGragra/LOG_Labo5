@@ -70,7 +70,7 @@ class ImageTest {
         private boolean notifie = false;
 
         @Override
-        public void update(float parameter) {
+        public void update(Subject parameter) {
             notifie = true;
         }
 

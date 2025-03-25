@@ -9,7 +9,7 @@ import javax.imageio.ImageIO;
 import vue.Observer;
 
 /**
-    * Classe représentant une image
+ * Classe représentant une image
  */
 public class Image implements Subject {
     private String chemin; // Chemin du fichier image
@@ -21,7 +21,8 @@ public class Image implements Subject {
     }
 
     /**
-        * Charge une image à partir d'un fichier
+     * Charge une image à partir d'un fichier
+     * @param chemin le chemin du fichier image
      */
     public void chargerImage(String chemin) throws IOException {
         this.chemin = chemin; // Mémorisation du chemin
@@ -30,14 +31,16 @@ public class Image implements Subject {
     }
 
     /**
-        * Retourne le chemin du fichier image
+     * Retourne le chemin du fichier image
+     * @return le chemin du fichier image
      */
     public BufferedImage getBufferedImage() {
         return image;
     }
 
     /**
-        * Ajoute un observateur à la liste
+     * Ajoute un observateur à la liste
+     * @param observer l'observateur à ajouter
      */
     @Override
     public void attach(Observer observer) {
@@ -45,7 +48,8 @@ public class Image implements Subject {
     }
 
     /**
-        * Retire un observateur de la liste
+     * Retire un observateur de la liste
+     * @param observer l'observateur à retirer
      */
     @Override
     public void detach(Observer observer) {
@@ -53,12 +57,12 @@ public class Image implements Subject {
     }
 
     /**
-        * Notifie tous les observateurs
+     * Notifie tous les observateurs
      */
     @Override
     public void notifyObservers() {
         for (Observer observer : observers) {
-            observer.update(0); // Valeur non utilisée ici
+            observer.update(this); // Valeur non utilisée ici
         }
     }
 }

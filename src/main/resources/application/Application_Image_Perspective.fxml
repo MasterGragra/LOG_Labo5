@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.Cursor?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
@@ -39,9 +41,24 @@
                   <Cursor fx:constant="DEFAULT" />
                </cursor>
                <children>
-                  <ImageView fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" />
-                  <ImageView fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" />
-                  <ImageView fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" />
+                  <ImageView fitHeight="185.0" fitWidth="173.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../anger.png" />
+                     </image>
+                     <HBox.margin>
+                        <Insets right="50.0" />
+                     </HBox.margin></ImageView>
+                  <ImageView fitHeight="185.0" fitWidth="518.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../anger.png" />
+                     </image>
+                     <HBox.margin>
+                        <Insets right="50.0" />
+                     </HBox.margin></ImageView>
+                  <ImageView fitHeight="185.0" fitWidth="173.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../anger.png" />
+                     </image></ImageView>
                </children>
             </HBox>
          </children>

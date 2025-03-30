@@ -41,7 +41,7 @@
                   <Cursor fx:constant="DEFAULT" />
                </cursor>
                <children>
-                  <StackPane fx:id="panneau1" prefHeight="150.0" prefWidth="200.0">
+                  <StackPane fx:id="panneau1" prefHeight="150.0" prefWidth="200.0" style="-fx-border-color: red;">
                      <children>
                         <ImageView fx:id="imageComplete" fitHeight="185.0" fitWidth="173.0" pickOnBounds="true" preserveRatio="true">
                            <image>
@@ -50,7 +50,7 @@
                         </ImageView>
                      </children>
                   </StackPane>
-                  <StackPane fx:id="panneau2" prefHeight="150.0" prefWidth="200.0">
+                  <StackPane fx:id="panneau2" prefHeight="150.0" prefWidth="200.0" style="-fx-border-color: gray;">
                      <children>
                         <ImageView fx:id="image2" fitHeight="185.0" fitWidth="173.0" pickOnBounds="true" preserveRatio="true">
                            <image>
@@ -59,7 +59,7 @@
                         </ImageView>
                      </children>
                   </StackPane>
-                  <StackPane fx:id="panneau3" prefHeight="150.0" prefWidth="200.0">
+                  <StackPane fx:id="panneau3" prefHeight="150.0" prefWidth="200.0" style="-fx-border-color: gray;">
                      <children>
                         <ImageView fx:id="image3" fitHeight="185.0" fitWidth="173.0" pickOnBounds="true" preserveRatio="true">
                            <image>

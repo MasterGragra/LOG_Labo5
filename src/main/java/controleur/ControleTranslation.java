@@ -21,6 +21,7 @@ public class ControleTranslation implements ManipulationImageStrategie {
                 dragStartY = mouseEvent.getSceneY();
                 imageStartX = mouseEvent.getSceneX();
                 imageStartY = mouseEvent.getSceneY();
+                System.out.println("dragStartX: " + dragStartX);
             }
 
             else if(mouseEvent.getEventType() == MouseEvent.MOUSE_DRAGGED

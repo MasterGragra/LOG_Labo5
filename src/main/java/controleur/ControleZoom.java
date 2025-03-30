@@ -20,6 +20,7 @@ public class ControleZoom implements ManipulationImageStrategie {
             imageView.setScaleX(zoomFactor);
             imageView.setScaleY(zoomFactor);
             scrollEvent.consume();
+            System.out.println("zoomFactor: " + zoomFactor);
         }
     }
 }

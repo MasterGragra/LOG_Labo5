@@ -15,24 +15,33 @@ public class ImageController{
     private final ManipulationImageStrategie controleTranslation = new ControleTranslation();
 
 
-    @FXML private void initialize() {
+    @FXML
+    public void initialize() {
         setImageControls(panneau2, image2);
         setImageControls(panneau3, image3);
     }
 
     private void setImageControls(StackPane panneau, ImageView image){
 
+        panneau.setPickOnBounds(true);
+        image.setPickOnBounds(true);
+
         panneau.setOnScroll(event -> {
             controleZoom.handleEvent(event, image);
+            event.consume();
         });
 
         panneau.setOnMousePressed(event -> {
             controleTranslation.handleEvent(event,image);
+            event.consume();
         });
 
         panneau.setOnMouseDragged(event -> {
             controleTranslation.handleEvent(event,image);
+            event.consume();
         });
+        panneau.setOnMouseEntered(e -> System.out.println("Mouse entered pane"));
+        panneau.setOnMouseExited(e -> System.out.println("Mouse exited pane"));
 
     }
 

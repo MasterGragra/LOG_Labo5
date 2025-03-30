@@ -1,6 +1,5 @@
 module application {
     requires javafx.controls;
-    requires javafx.fxml;
     requires javafx.web;
 
     requires org.controlsfx.controls;
@@ -9,6 +8,7 @@ module application {
     requires org.kordamp.bootstrapfx.core;
     requires eu.hansolo.tilesfx;
     requires java.desktop;
+    requires javafx.fxml;
 
     opens application to javafx.fxml;
     exports application;

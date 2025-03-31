@@ -17,6 +17,7 @@ public class ImageController{
 
     @FXML
     public void initialize() {
+        System.out.println("ImageController initialized");
         setImageControls(panneau2, image2);
         setImageControls(panneau3, image3);
     }

@@ -12,4 +12,7 @@ module application {
 
     opens application to javafx.fxml;
     exports application;
+
+    exports controleur;
+    opens controleur to javafx.fxml;
 }

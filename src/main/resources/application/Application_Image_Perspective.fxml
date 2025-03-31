@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox prefHeight="400.0" prefWidth="640.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<VBox prefHeight="400.0" prefWidth="640.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controleur.ImageController">
   <children>
     <MenuBar VBox.vgrow="NEVER">
       <menus>
@@ -41,27 +41,27 @@
                   <Cursor fx:constant="DEFAULT" />
                </cursor>
                <children>
-                  <StackPane prefHeight="150.0" prefWidth="200.0">
+                  <StackPane fx:id="panneau1" prefHeight="150.0" prefWidth="200.0" style="-fx-border-color: red;">
                      <children>
-                        <ImageView fitHeight="185.0" fitWidth="173.0" pickOnBounds="true" preserveRatio="true">
+                        <ImageView fx:id="imageComplete" fitHeight="185.0" fitWidth="173.0" pickOnBounds="true" preserveRatio="true">
                            <image>
                               <Image url="@../anger.png" />
                            </image>
                         </ImageView>
                      </children>
                   </StackPane>
-                  <StackPane prefHeight="150.0" prefWidth="200.0">
+                  <StackPane fx:id="panneau2" prefHeight="150.0" prefWidth="200.0" style="-fx-border-color: gray;">
                      <children>
-                        <ImageView fitHeight="185.0" fitWidth="173.0" pickOnBounds="true" preserveRatio="true">
+                        <ImageView fx:id="image2" fitHeight="185.0" fitWidth="173.0" pickOnBounds="true" preserveRatio="true">
                            <image>
                               <Image url="@../anger.png" />
                            </image>
                         </ImageView>
                      </children>
                   </StackPane>
-                  <StackPane prefHeight="150.0" prefWidth="200.0">
+                  <StackPane fx:id="panneau3" prefHeight="150.0" prefWidth="200.0" style="-fx-border-color: gray;">
                      <children>
-                        <ImageView fitHeight="185.0" fitWidth="173.0" pickOnBounds="true" preserveRatio="true">
+                        <ImageView fx:id="image3" fitHeight="185.0" fitWidth="173.0" pickOnBounds="true" preserveRatio="true">
                            <image>
                               <Image url="@../anger.png" />
                            </image>

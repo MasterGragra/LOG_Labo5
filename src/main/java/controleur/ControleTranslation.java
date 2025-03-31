@@ -15,7 +15,7 @@ public class ControleTranslation implements ManipulationImageStrategie {
         if(event instanceof MouseEvent mouseEvent) {
 
             if(mouseEvent.getEventType() == MouseEvent.MOUSE_PRESSED
-            && mouseEvent.isSecondaryButtonDown()) {
+            && mouseEvent.isPrimaryButtonDown()) {
 
                 dragStartX = mouseEvent.getSceneX();
                 dragStartY = mouseEvent.getSceneY();
@@ -25,7 +25,7 @@ public class ControleTranslation implements ManipulationImageStrategie {
             }
 
             else if(mouseEvent.getEventType() == MouseEvent.MOUSE_DRAGGED
-            && mouseEvent.isSecondaryButtonDown()) {
+            && mouseEvent.isPrimaryButtonDown()) {
 
                 double deltaX = mouseEvent.getSceneX() - dragStartX;
                 double deltaY = mouseEvent.getSceneY() - dragStartY;

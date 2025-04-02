@@ -9,10 +9,10 @@ module application {
     requires eu.hansolo.tilesfx;
     requires java.desktop;
     requires javafx.fxml;
+    requires javafx.graphics;
 
-    opens application to javafx.fxml;
     exports application;
-
     exports controleur;
-    opens controleur to javafx.fxml;
+    exports modele;
+    exports vue;
 }

@@ -1,9 +1,6 @@
 package vue;
 
 import controleur.ControleSouris;
-import controleur.ControleZoom;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.input.ScrollEvent;
 import modele.Perspective;
 
 /**

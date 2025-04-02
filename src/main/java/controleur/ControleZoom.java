@@ -33,12 +33,12 @@ public class ControleZoom implements ControleSouris {
 
     @Override
     public void gererMouseReleased(MouseEvent evt) {
-        // Vérifier si le facteur de zoom a changé et créer une commande si nécessaire
         double facteurZoomFinal = perspective.getFacteurEchelle();
 
         if (facteurZoomInitial != facteurZoomFinal) {
-            // Créer une commande ZoomCommand et l'exécuter via commandManager
             ZoomCommand zoomCommand = new ZoomCommand(perspective, facteurZoomFinal);
+            // Définir explicitement le facteur initial
+            zoomCommand.setFacteurInitial(facteurZoomInitial);
             commandManager.executeCommand(zoomCommand);
         }
     }
@@ -48,13 +48,24 @@ public class ControleZoom implements ControleSouris {
      * @param deltaY La valeur de déplacement en Y de la souris
      */
     public void effectuerZoom(double deltaY) {
-        double facteurZoom = perspective.getFacteurEchelle();
-        double delta = deltaY * 0.01; // Ajuster la sensibilité du zoom
+        // Stocker les valeurs initiales avant modification
+        facteurZoomInitial = perspective.getFacteurEchelle();
 
-        // Stocker les valeurs initiales
-        facteurZoomInitial = facteurZoom;
+        // Calculer le nouveau facteur de zoom
+        double facteurZoomFinal = facteurZoomInitial + (deltaY * 0.01);
 
         // Appliquer directement le zoom
-        perspective.setFacteurEchelle(facteurZoom + delta);
+        perspective.setFacteurEchelle(facteurZoomFinal);
+
+        // Créer et exécuter la commande
+        ZoomCommand zoomCommand = new ZoomCommand(perspective, facteurZoomFinal);
+        zoomCommand.setFacteurInitial(facteurZoomInitial);
+
+        // Enregistrer la commande dans le CommandManager
+        commandManager.executeCommand(zoomCommand);
+
+        // Debug
+        System.out.println("Commande de zoom exécutée. Initial: " + facteurZoomInitial +
+                ", Final: " + facteurZoomFinal);
     }
 }

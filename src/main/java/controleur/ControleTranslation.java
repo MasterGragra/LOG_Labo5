@@ -8,8 +8,8 @@ import modele.Perspective;
 public class ControleTranslation implements ControleSouris {
     private Perspective perspective;
     private CommandManager commandManager;
-    private double startX, startY;  // Position initiale de la souris
-    private int positionXInitiale, positionYInitiale;  // Position initiale de la perspective
+    private double sourisXInitiale, sourisYInitiale;  // Position initiale de la souris
+    private int perspectiveXInitiale, perspectiveYInitiale;  // Position initiale de la perspective
 
     public ControleTranslation(Perspective perspective) {
         this.perspective = perspective;
@@ -19,35 +19,41 @@ public class ControleTranslation implements ControleSouris {
     @Override
     public void gererMousePressed(MouseEvent event) {
         // Enregistrer la position initiale de la souris
-        startX = event.getSceneX();
-        startY = event.getSceneY();
+        sourisXInitiale = event.getSceneX();
+        sourisYInitiale = event.getSceneY();
 
         // Enregistrer la position initiale de la perspective
-        positionXInitiale = perspective.getPositionX();
-        positionYInitiale = perspective.getPositionY();
+        perspectiveXInitiale = perspective.getPositionX();
+        perspectiveYInitiale = perspective.getPositionY();
     }
 
     @Override
     public void gererMouseDragged(MouseEvent event) {
         // Calculer le déplacement
-        double deltaX = event.getSceneX() - startX;
-        double deltaY = event.getSceneY() - startY;
+        double deltaX = event.getSceneX() - sourisXInitiale;
+        double deltaY = event.getSceneY() - sourisYInitiale;
 
         // Appliquer directement le déplacement (sans créer de commande)
         perspective.setPosition(
-                positionXInitiale + (int)deltaX,
-                positionYInitiale + (int)deltaY
+                perspectiveXInitiale + (int)deltaX,
+                perspectiveYInitiale + (int)deltaY
         );
     }
 
     @Override
     public void gererMouseReleased(MouseEvent event) {
-        // Créer et exécuter une commande seulement à la fin du mouvement
-        int finalX = perspective.getPositionX();
-        int finalY = perspective.getPositionY();
+        // Calculer la position finale
+        double deltaX = event.getSceneX() - sourisXInitiale;
+        double deltaY = event.getSceneY() - sourisYInitiale;
 
-        if (finalX != positionXInitiale || finalY != positionYInitiale) {
+        int finalX = (int)(perspectiveXInitiale + deltaX);
+        int finalY = (int)(perspectiveYInitiale + deltaY);
+
+        // Ne créer une commande que si la position a changé
+        if (finalX != perspectiveXInitiale || finalY != perspectiveYInitiale) {
             TranslationCommand command = new TranslationCommand(perspective, finalX, finalY);
+            // Définir explicitement la position initiale
+            command.setPositionInitiale(perspectiveXInitiale, perspectiveYInitiale);
             commandManager.executeCommand(command);
         }
     }

@@ -2,7 +2,12 @@
 'Architecture MVC avec patrons de conception
 title Diagramme de classe
 
-package "modele" {
+skinparam linetype ortho
+skinparam nodesep 80
+skinparam ranksep 100
+skinparam shadowing false
+
+package "modele" #E8F5E9 {
   class Image implements Subject {
     -chemin: String
     -imageJavaFX: javafx.scene.image.Image
@@ -57,7 +62,7 @@ package "modele" {
   endnote
 }
 
-package "vue" {
+package "vue" #E3F2FD {
   interface Observer {
     +update(parameter: Subject)
   }
@@ -71,19 +76,23 @@ package "vue" {
     #perspective: Perspective
     #pane: Pane
     +VueAbstraite(perspective: Perspective)
-    +update()
-    #dessiner()
+    +update(subject: Subject)
+    #abstract dessiner()
     +getPane(): Pane
+    +renduInitial()
   }
 
-  class VueThumbnail extends VueAbstraite {
+  class VueFixe extends VueAbstraite {
     -imageView: ImageView
-    +VueThumbnail(perspective: Perspective)
-    +dessiner()
+    +VueFixe(perspective: Perspective)
+    #dessiner()
+    +getImageView(): ImageView
   }
 
   abstract class VueInteractive extends VueAbstraite {
     #controleSouris: ControleSouris
+    +VueInteractive(perspective: Perspective)
+    #activerClipping()
     +setControleSouris(controle: ControleSouris)
     +getControleSouris(): ControleSouris
   }
@@ -91,22 +100,24 @@ package "vue" {
   class VuePrincipale extends VueInteractive {
     -imageView: ImageView
     +VuePrincipale(perspective: Perspective)
-    +dessiner()
-  }
+    #dessiner()
+    +getImageView(): ImageView
+}
 
   class VueSecondaire extends VueInteractive {
     -imageView: ImageView
     +VueSecondaire(perspective: Perspective)
-    +dessiner()
+    #dessiner()
+    +getImageView(): ImageView
   }
-  note top of VueSecondaire
+  note left of VueSecondaire
     Les vues sont des observateurs
     qui se mettent à jour automatiquement
     lorsque le modèle change
   endnote
 }
 
-package "controleur" {
+package "controleur" #FFF3E0 {
   interface ControleSouris {
     +gererMousePressed(evt: MouseEvent)
     +gererMouseDragged(evt: MouseEvent)
@@ -128,15 +139,16 @@ package "controleur" {
     +gererMousePressed(evt: MouseEvent)
     +gererMouseDragged(evt: MouseEvent)
     +gererMouseReleased(evt: MouseEvent)
-  }
+    +effectuerZoom(deltaY: double)
+}
 
   class ControleTranslation {
     -perspective: Perspective
     -commandManager: CommandManager
-    -positionXInitiale: int
-    -positionYInitiale: int
-    -translateXInitial: int
-    -translateYInitial: int
+    -sourisXInitiale: double
+    -sourisYInitiale: double
+    -perspectiveXInitiale: int
+    -perspectiveYInitiale: int
     +ControleTranslation(perspective: Perspective)
     +gererMousePressed(evt: MouseEvent)
     +gererMouseDragged(evt: MouseEvent)
@@ -148,19 +160,19 @@ package "controleur" {
     -imageViews: List<ImageView>
     -panes: List<StackPane>
     -strategies: Map<StackPane, ControleSouris>
-    +initialize()
-    +configurerEvenementsSouris(pane: StackPane, perspective: Perspective)
-    +configurerRaccourcis()
-    +lierPerspectiveEtVue(perspective: Perspective, imageView: ImageView)
+    -controleZooms: Map<StackPane, ControleZoom>
+    -commandManager: CommandManager
+    +configurerEvenementsSouris(pane: StackPane, perspective: Perspective, vue: VueInteractive)
+    +lierPerspectiveEtVue(perspective: Perspective, imageView: ImageView, vue: VueInteractive)
   }
   note bottom of ImageController
-    Contrôleur FXML responsable de
-    lier les composants JavaFX aux
-    stratégies et perspectives
+    Contrôleur responsable de
+    lier les vues JavaFX aux perspectives
+    et configurer les interactions utilisateur
   endnote
 }
 
-package "commande" {
+package "commande" #F3E5F5 {
   interface Command {
     +execute()
     +undo()
@@ -209,7 +221,7 @@ package "commande" {
   endnote
 }
 
-package "memento" {
+package "memento" #FFEBEE {
   class PerspectiveMemento implements Serializable {
     -facteurEchelle: double
     -positionX: int
@@ -219,7 +231,7 @@ package "memento" {
     +getPositionX(): int
     +getPositionY(): int
   }
-  note right of PerspectiveMemento
+  note left of PerspectiveMemento
     Pattern Memento: capture l'état interne
     d'une perspective pour restauration future
   endnote
@@ -235,26 +247,28 @@ package "memento" {
   endnote
 }
 
-package "application" {
+package "application" #E0F7FA {
   class ApplicationMain extends Application {
     +main(args: String[])
     +demarrer(primaryStage: Stage)
     +stop()
   }
-  note right of ApplicationMain
+  note left of ApplicationMain
     Point d'entrée JavaFX
     Initialise l'application
   endnote
 
   class ApplicationController {
-    -perspectives: List<Perspective>
-    -vues: Map<String, VueAbstraite>
-    -imageController: ImageController
-    -commandManager: CommandManager
-    +initialiserModeles()
-    +initialiserVues()
-    +connecterVuesEtModeles()
-    +chargerFXML(): Parent
+      -perspectives: List<Perspective>
+      -vues: Map<String, VueAbstraite>
+      -imageController: ImageController
+      -sauvegarde: Sauvegarde
+      +initialiserModeles()
+      +initialiserVues()
+      +creerInterface(): Parent
+      +chargerImage(cheminImage: String)
+      +getPerspectives(): List<Perspective>
+      +getVues(): Map<String, VueAbstraite>
   }
   note left of ApplicationController
     Contrôleur principal de l'application
@@ -269,7 +283,7 @@ package "application" {
     +ajouterVue(conteneur: Pane, vue: VueAbstraite)
     +configurerRaccourcisClavier(scene: Scene)
   }
-  note right of GestionnaireInterface
+  note left of GestionnaireInterface
     Gestion de l'interface utilisateur
     Création des fenêtres, menus, etc.
   endnote
@@ -294,11 +308,10 @@ Perspective -- ImageController : manipule >
 
 ' Relations d'application
 ApplicationController -- Sauvegarde : utilise >
-ApplicationController -- CommandManager : utilise >
 ApplicationController "1" o-- "*" Perspective
 ApplicationMain -- ApplicationController : utilise >
 ApplicationMain -- GestionnaireInterface : utilise >
 
-note "Architecture MVC avec JavaFX:\n- Modèle: Image, Perspective\n- Vue: VueAbstraite et ses sous-classes\n- Contrôleur: ImageController (FXML), ControleZoom, ControleTranslation" as N1
+note "Architecture MVC avec JavaFX:\n- Modèle: Image, Perspective\n- Vue: VueAbstraite et ses sous-classes\n- Contrôleur: ImageController, ControleZoom, ControleTranslation" as N1
 note "Patrons de conception utilisés:\n- Observer: Subject/Observer pour MVC\n- Command: Pour undo/redo\n- Strategy: ControleSouris pour comportements\n- Memento: PerspectiveMemento pour sauvegarde d'état\n- Singleton: CommandManager comme gestionnaire unique" as N2
 @enduml

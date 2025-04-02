@@ -15,4 +15,5 @@ module application {
     exports controleur;
     exports modele;
     exports vue;
+    exports memento;
 }

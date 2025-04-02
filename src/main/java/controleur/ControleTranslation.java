@@ -1,39 +1,46 @@
 package controleur;
 
+import commande.CommandManager;
+import commande.TranslationCommand;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.InputEvent;
 import javafx.scene.input.MouseEvent;
+import modele.Perspective;
 
 public class ControleTranslation implements ManipulationImageStrategie {
+    private ImageView imageView;
+    private Perspective perspective;
+    private int positionXInitiale, positionYInitiale;
+    private int translateXInitial, translateYInitial;
 
-    private double dragStartX, dragStartY;
-    private double imageStartX, imageStartY;
+    public ControleTranslation(ImageView imageView, Perspective perspective) {
+        this.imageView = imageView;
+        this.perspective = perspective;
+    }
 
     @Override
-    public void handleEvent(InputEvent event, ImageView imageView) {
+    public void gererMousePressed(MouseEvent event) {
+        positionXInitiale = (int) event.getSceneX();
+        positionYInitiale = (int) event.getSceneY();
+        translateXInitial = perspective.getPositionX();
+        translateYInitial = perspective.getPositionY();
+    }
 
-        if(event instanceof MouseEvent mouseEvent) {
+    @Override
+    public void gererMouseDragged(MouseEvent event) {
+        int deltaX = (int) event.getSceneX() - positionXInitiale;
+        int deltaY = (int) event.getSceneY() - positionYInitiale;
 
-            if(mouseEvent.getEventType() == MouseEvent.MOUSE_PRESSED
-            && mouseEvent.isPrimaryButtonDown()) {
+        int nouveauX = translateXInitial + deltaX;
+        int nouveauY = translateYInitial + deltaY;
 
-                dragStartX = mouseEvent.getSceneX();
-                dragStartY = mouseEvent.getSceneY();
-                imageStartX = mouseEvent.getSceneX();
-                imageStartY = mouseEvent.getSceneY();
-                System.out.println("dragStartX: " + dragStartX);
-            }
+        // Créer et exécuter la commande de translation
+        TranslationCommand command = new TranslationCommand(perspective, nouveauX, nouveauY);
+        CommandManager.getInstance().executeCommand(command);
+    }
 
-            else if(mouseEvent.getEventType() == MouseEvent.MOUSE_DRAGGED
-            && mouseEvent.isPrimaryButtonDown()) {
-
-                double deltaX = mouseEvent.getSceneX() - dragStartX;
-                double deltaY = mouseEvent.getSceneY() - dragStartY;
-
-                imageView.setTranslateX(imageStartX + deltaX);
-                imageView.setTranslateY(imageStartY + deltaY);
-            }
-        }
-
+    @Override
+    public void gererMouseReleased(MouseEvent event) {
+        // Rien à faire ici
     }
 }

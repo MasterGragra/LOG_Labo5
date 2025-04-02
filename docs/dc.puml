@@ -5,10 +5,10 @@ title Diagramme de classe
 package "modele" {
   class Image implements Subject {
     -chemin: String
-    -image: BufferedImage
+    -image: javafx.scene.image.Image
     -observers: List<Observer>
     +chargerImage(chemin : String)
-    +getBufferedImage(): BufferedImage
+    +getJavaFXImage(): javafx.scene.image.Image
     +attach(observer: Observer)
     +detach(observer: Observer)
     +notifyObservers()
@@ -19,9 +19,9 @@ package "modele" {
   endnote
 
   class Perspective implements Subject, Serializable {
-    -facteurEchelle: double
-    -positionX: int
-    -positionY: int
+    -facteurEchelle: DoubleProperty
+    -positionX: IntegerProperty
+    -positionY: IntegerProperty
     -image: Image
     -observers: List<Observer>
     +Perspective(image: Image)
@@ -33,6 +33,9 @@ package "modele" {
     +getFacteurEchelle(): double
     +getPositionX(): int
     +getPositionY(): int
+    +facteurEchelleProperty(): DoubleProperty
+    +positionXProperty(): IntegerProperty
+    +positionYProperty(): IntegerProperty
     +attach(observer: Observer)
     +detach(observer: Observer)
     +notifyObservers()
@@ -66,13 +69,15 @@ package "vue" {
 
   abstract class VueAbstraite implements Observer {
     #perspective: Perspective
-    #canvas: Canvas
+    #pane: Pane
     +VueAbstraite(perspective: Perspective)
     +update()
     #dessiner()
+    +getPane(): Pane
   }
 
   class VueThumbnail extends VueAbstraite {
+    -imageView: ImageView
     +VueThumbnail(perspective: Perspective)
     +dessiner()
   }
@@ -80,14 +85,17 @@ package "vue" {
   abstract class VueInteractive extends VueAbstraite {
     #controleSouris: ControleSouris
     +setControleSouris(controle: ControleSouris)
+    +getControleSouris(): ControleSouris
   }
 
   class VuePrincipale extends VueInteractive {
+    -imageView: ImageView
     +VuePrincipale(perspective: Perspective)
     +dessiner()
   }
 
   class VueSecondaire extends VueInteractive {
+    -imageView: ImageView
     +VueSecondaire(perspective: Perspective)
     +dessiner()
   }
@@ -113,6 +121,9 @@ package "controleur" {
   class ControleZoom {
     -perspective: Perspective
     -commandManager: CommandManager
+    -facteurZoomInitial: double
+    -positionXInitiale: double
+    -positionYInitiale: double
     +ControleZoom(perspective: Perspective)
     +gererMousePressed(evt: MouseEvent)
     +gererMouseDragged(evt: MouseEvent)
@@ -122,11 +133,31 @@ package "controleur" {
   class ControleTranslation {
     -perspective: Perspective
     -commandManager: CommandManager
+    -positionXInitiale: int
+    -positionYInitiale: int
+    -translateXInitial: int
+    -translateYInitial: int
     +ControleTranslation(perspective: Perspective)
     +gererMousePressed(evt: MouseEvent)
     +gererMouseDragged(evt: MouseEvent)
     +gererMouseReleased(evt: MouseEvent)
   }
+
+  class ImageController {
+    -perspectives: List<Perspective>
+    -imageViews: List<ImageView>
+    -panes: List<StackPane>
+    -strategies: Map<StackPane, ControleSouris>
+    +initialize()
+    +configurerEvenementsSouris(pane: StackPane, perspective: Perspective)
+    +configurerRaccourcis()
+    +lierPerspectiveEtVue(perspective: Perspective, imageView: ImageView)
+  }
+  note bottom of ImageController
+    Contrôleur FXML responsable de
+    lier les composants JavaFX aux
+    stratégies et perspectives
+  endnote
 }
 
 package "commande" {
@@ -196,6 +227,7 @@ package "memento" {
   class Sauvegarde {
     +sauvegarderEtat(perspectives: List<Perspective>, fichier: String)
     +chargerEtat(fichier: String): List<Perspective>
+    +fichierExiste(fichier: String): boolean
   }
   note right of Sauvegarde
     Utilise la sérialisation Java pour
@@ -204,33 +236,38 @@ package "memento" {
 }
 
 package "application" {
-  class ApplicationMain {
+  class ApplicationMain extends Application {
     +main(args: String[])
-    +demarrer()
+    +demarrer(primaryStage: Stage)
+    +stop()
   }
   note right of ApplicationMain
-    Point d'entrée unique
+    Point d'entrée JavaFX
     Initialise l'application
   endnote
 
   class ApplicationController {
-    -modeles: List<Perspective>
+    -perspectives: List<Perspective>
     -vues: Map<String, VueAbstraite>
+    -imageController: ImageController
     -commandManager: CommandManager
     +initialiserModeles()
     +initialiserVues()
     +connecterVuesEtModeles()
+    +chargerFXML(): Parent
   }
   note left of ApplicationController
-    Coordonne les composants MVC
-    Initialise les connexions entre vues et modèles
+    Contrôleur principal de l'application
+    Coordonne les modèles, vues et contrôleurs
   endnote
 
   class GestionnaireInterface {
-    -frames: List<JFrame>
-    +creerFenetre(titre: String): JFrame
-    +creerMenu(frame: JFrame)
-    +ajouterVue(frame: JFrame, vue: VueAbstraite)
+    -stage: Stage
+    -scene: Scene
+    +creerFenetre(titre: String): Stage
+    +creerMenu(root: Parent): MenuBar
+    +ajouterVue(conteneur: Pane, vue: VueAbstraite)
+    +configurerRaccourcisClavier(scene: Scene)
   }
   note right of GestionnaireInterface
     Gestion de l'interface utilisateur
@@ -253,6 +290,7 @@ ControleSouris <|.. ControleTranslation
 CommandManager "1" -- "*" Command : gère >
 ControleZoom -- CommandManager : utilise >
 ControleTranslation -- CommandManager : utilise >
+Perspective -- ImageController : manipule >
 
 ' Relations d'application
 ApplicationController -- Sauvegarde : utilise >
@@ -260,5 +298,7 @@ ApplicationController -- CommandManager : utilise >
 ApplicationController "1" o-- "*" Perspective
 ApplicationMain -- ApplicationController : utilise >
 ApplicationMain -- GestionnaireInterface : utilise >
-note "Architecture MVC:\n- Modèle: Image, Perspective\n- Vue: VueAbstraite et ses sous-classes\n- Contrôleur: ControleZoom, ControleTranslation" as N1
+
+note "Architecture MVC avec JavaFX:\n- Modèle: Image, Perspective\n- Vue: VueAbstraite et ses sous-classes\n- Contrôleur: ImageController (FXML), ControleZoom, ControleTranslation" as N1
+note "Patrons de conception utilisés:\n- Observer: Subject/Observer pour MVC\n- Command: Pour undo/redo\n- Strategy: ControleSouris pour comportements\n- Memento: PerspectiveMemento pour sauvegarde d'état\n- Singleton: CommandManager comme gestionnaire unique" as N2
 @enduml

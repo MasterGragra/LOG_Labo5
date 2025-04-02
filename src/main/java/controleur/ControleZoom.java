@@ -1,26 +1,47 @@
 package controleur;
 
+import commande.CommandManager;
+import commande.ZoomCommand;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.InputEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
+import modele.Perspective;
 
 public class ControleZoom implements ManipulationImageStrategie {
 
-    private double zoomFactor = 1.0;
-    private static final double ZOOM_INTENSITY = 0.1;
+    private ImageView imageView;
+    private Perspective perspective;
+    private double facteurZoomInitial;
+    private double positionXInitiale, positionYInitiale;
+
+    public ControleZoom(ImageView imageView, Perspective perspective) {
+        this.imageView = imageView;
+        this.perspective = perspective;
+    }
 
     @Override
-    public void handleEvent(InputEvent event, ImageView imageView) {
-        if(event instanceof ScrollEvent scrollEvent && scrollEvent.isControlDown()) {
+    public void gererMousePressed(MouseEvent event) {
+        facteurZoomInitial = perspective.getFacteurEchelle();
+        positionXInitiale = event.getSceneX();
+        positionYInitiale = event.getSceneY();
+    }
 
-            double zoom = scrollEvent.getDeltaY() > 0 ?
-                    (1+ ZOOM_INTENSITY) : (1- ZOOM_INTENSITY);
+    @Override
+    public void gererMouseDragged(MouseEvent event) {
+        double deltaY = event.getSceneY() - positionYInitiale;
+        double nouveauFacteur = facteurZoomInitial * (1 - deltaY / 500);
 
-            zoomFactor *= zoom;
-            imageView.setScaleX(zoomFactor);
-            imageView.setScaleY(zoomFactor);
-            scrollEvent.consume();
-            System.out.println("zoomFactor: " + zoomFactor);
-        }
+        // Limiter le facteur de zoom
+        nouveauFacteur = Math.max(0.1, Math.min(5.0, nouveauFacteur));
+
+        // Créer et exécuter la commande de zoom
+        ZoomCommand command = new ZoomCommand(perspective, nouveauFacteur);
+        CommandManager.getInstance().executeCommand(command);
+    }
+
+    @Override
+    public void gererMouseReleased(MouseEvent event) {
+        // Rien à faire ici
     }
 }

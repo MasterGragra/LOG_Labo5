@@ -1,10 +1,8 @@
 package controleur;
 
-import javafx.scene.image.ImageView;
-import javafx.scene.input.InputEvent;
 import javafx.scene.input.MouseEvent;
 
-public interface ManipulationImageStrategie {
+public interface ControleSouris {
 
     void gererMousePressed(MouseEvent event);
     void gererMouseDragged(MouseEvent event);

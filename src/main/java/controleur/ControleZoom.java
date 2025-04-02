@@ -1,47 +1,60 @@
 package controleur;
 
+import javafx.scene.input.MouseEvent;
 import commande.CommandManager;
 import commande.ZoomCommand;
-import javafx.scene.image.ImageView;
-import javafx.scene.input.InputEvent;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.input.ScrollEvent;
 import modele.Perspective;
 
-public class ControleZoom implements ManipulationImageStrategie {
-
-    private ImageView imageView;
+public class ControleZoom implements ControleSouris {
     private Perspective perspective;
+    private CommandManager commandManager;
     private double facteurZoomInitial;
-    private double positionXInitiale, positionYInitiale;
+    private double positionXInitiale;
+    private double positionYInitiale;
 
-    public ControleZoom(ImageView imageView, Perspective perspective) {
-        this.imageView = imageView;
+    public ControleZoom(Perspective perspective) {
         this.perspective = perspective;
+        this.commandManager = CommandManager.getInstance();
     }
 
     @Override
-    public void gererMousePressed(MouseEvent event) {
+    public void gererMousePressed(MouseEvent evt) {
+        // Stocker les valeurs initiales pour pouvoir créer une commande plus tard
         facteurZoomInitial = perspective.getFacteurEchelle();
-        positionXInitiale = event.getSceneX();
-        positionYInitiale = event.getSceneY();
+        positionXInitiale = perspective.getPositionX();
+        positionYInitiale = perspective.getPositionY();
     }
 
     @Override
-    public void gererMouseDragged(MouseEvent event) {
-        double deltaY = event.getSceneY() - positionYInitiale;
-        double nouveauFacteur = facteurZoomInitial * (1 - deltaY / 500);
-
-        // Limiter le facteur de zoom
-        nouveauFacteur = Math.max(0.1, Math.min(5.0, nouveauFacteur));
-
-        // Créer et exécuter la commande de zoom
-        ZoomCommand command = new ZoomCommand(perspective, nouveauFacteur);
-        CommandManager.getInstance().executeCommand(command);
+    public void gererMouseDragged(MouseEvent evt) {
+        // Cette méthode n'est pas utilisée pour le zoom car nous utilisons le défilement
+        // qui est géré directement dans ImageController
     }
 
     @Override
-    public void gererMouseReleased(MouseEvent event) {
-        // Rien à faire ici
+    public void gererMouseReleased(MouseEvent evt) {
+        // Vérifier si le facteur de zoom a changé et créer une commande si nécessaire
+        double facteurZoomFinal = perspective.getFacteurEchelle();
+
+        if (facteurZoomInitial != facteurZoomFinal) {
+            // Créer une commande ZoomCommand et l'exécuter via commandManager
+            ZoomCommand zoomCommand = new ZoomCommand(perspective, facteurZoomFinal);
+            commandManager.executeCommand(zoomCommand);
+        }
+    }
+
+    /**
+     * Méthode utilitaire pour effectuer un zoom
+     * @param deltaY La valeur de déplacement en Y de la souris
+     */
+    public void effectuerZoom(double deltaY) {
+        double facteurZoom = perspective.getFacteurEchelle();
+        double delta = deltaY * 0.01; // Ajuster la sensibilité du zoom
+
+        // Stocker les valeurs initiales
+        facteurZoomInitial = facteurZoom;
+
+        // Appliquer directement le zoom
+        perspective.setFacteurEchelle(facteurZoom + delta);
     }
 }

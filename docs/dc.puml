@@ -5,7 +5,7 @@ title Diagramme de classe
 package "modele" {
   class Image implements Subject {
     -chemin: String
-    -image: javafx.scene.image.Image
+    -imageJavaFX: javafx.scene.image.Image
     -observers: List<Observer>
     +chargerImage(chemin : String)
     +getJavaFXImage(): javafx.scene.image.Image

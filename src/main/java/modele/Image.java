@@ -1,19 +1,17 @@
 package modele;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import javax.imageio.ImageIO;
 import vue.Observer;
 
 /**
  * Classe représentant une image
+ * Implémente Subject dans le pattern Observer
  */
 public class Image implements Subject {
     private String chemin; // Chemin du fichier image
-    private BufferedImage image; // Image chargée
+    private javafx.scene.image.Image imageJavaFX; // Image JavaFX chargée
     private List<Observer> observers = new ArrayList<>(); // Liste des observateurs
 
     public Image() {
@@ -24,18 +22,30 @@ public class Image implements Subject {
      * Charge une image à partir d'un fichier
      * @param chemin le chemin du fichier image
      */
-    public void chargerImage(String chemin) throws IOException {
+    public void chargerImage(String chemin) {
         this.chemin = chemin; // Mémorisation du chemin
-        this.image = ImageIO.read(new File(chemin)); // Chargement de l'image
-        notifyObservers(); // Notification des observateurs
+
+        try {
+            // Conversion du chemin en URL de fichier
+            File file = new File(chemin);
+            String fileUrl = file.toURI().toString();
+
+            // Chargement de l'image avec JavaFX
+            this.imageJavaFX = new javafx.scene.image.Image(fileUrl);
+
+            // Notification des observateurs
+            notifyObservers();
+        } catch (Exception e) {
+            System.err.println("Erreur lors du chargement de l'image: " + e.getMessage());
+        }
     }
 
     /**
-     * Retourne le chemin du fichier image
-     * @return le chemin du fichier image
+     * Retourne l'image JavaFX
+     * @return l'image JavaFX
      */
-    public BufferedImage getBufferedImage() {
-        return image;
+    public javafx.scene.image.Image getJavaFXImage() {
+        return imageJavaFX;
     }
 
     /**
@@ -62,7 +72,7 @@ public class Image implements Subject {
     @Override
     public void notifyObservers() {
         for (Observer observer : observers) {
-            observer.update(this); // Valeur non utilisée ici
+            observer.update(this);
         }
     }
 }

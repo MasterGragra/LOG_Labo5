@@ -1,5 +1,9 @@
 package modele;
 
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import memento.PerspectiveMemento;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -11,9 +15,9 @@ import vue.Observer;
  * Implémente Subject pour le pattern Observer et Serializable pour la persistance
  */
 public class Perspective implements Subject, Serializable {
-    private double facteurEchelle;
-    private int positionX;
-    private int positionY;
+    private DoubleProperty facteurEchelle;
+    private IntegerProperty positionX;
+    private IntegerProperty positionY;
     private Image image;
     private final List<Observer> observers = new ArrayList<>();
 
@@ -23,9 +27,9 @@ public class Perspective implements Subject, Serializable {
      */
     public Perspective(Image image) {
         this.image = image;
-        this.facteurEchelle = 1.0;
-        this.positionX = 0;
-        this.positionY = 0;
+        this.facteurEchelle = new SimpleDoubleProperty(1.0);
+        this.positionX = new SimpleIntegerProperty(0);
+        this.positionY = new SimpleIntegerProperty(0);
     }
 
     /**
@@ -33,7 +37,7 @@ public class Perspective implements Subject, Serializable {
      * @return un objet PerspectiveMemento contenant l'état actuel
      */
     public PerspectiveMemento createMemento() {
-        return new PerspectiveMemento(facteurEchelle, positionX, positionY);
+        return new PerspectiveMemento(facteurEchelle.get(), positionX.get(), positionY.get());
     }
 
     /**
@@ -41,9 +45,9 @@ public class Perspective implements Subject, Serializable {
      * @param memento le memento contenant l'état à restaurer
      */
     public void setMemento(PerspectiveMemento memento) {
-        this.facteurEchelle = memento.getFacteurEchelle();
-        this.positionX = memento.getPositionX();
-        this.positionY = memento.getPositionY();
+        this.facteurEchelle.set(memento.getFacteurEchelle());
+        this.positionX.set(memento.getPositionX());
+        this.positionY.set(memento.getPositionY());
         notifyObservers();
     }
 
@@ -73,7 +77,7 @@ public class Perspective implements Subject, Serializable {
     @Override
     public void notifyObservers() {
         for (Observer observer : observers) {
-            observer.update(this); // Valeur non utilisée ici
+            observer.update(this);
         }
     }
 
@@ -84,7 +88,7 @@ public class Perspective implements Subject, Serializable {
      * @param facteur le nouveau facteur d'échelle
      */
     public void setFacteurEchelle(double facteur) {
-        this.facteurEchelle = facteur;
+        this.facteurEchelle.set(facteur);
         notifyObservers();
     }
 
@@ -94,8 +98,8 @@ public class Perspective implements Subject, Serializable {
      * @param y la nouvelle position Y
      */
     public void setPosition(int x, int y) {
-        this.positionX = x;
-        this.positionY = y;
+        this.positionX.set(x);
+        this.positionY.set(y);
         notifyObservers();
     }
 
@@ -110,21 +114,41 @@ public class Perspective implements Subject, Serializable {
      * @return le facteur d'échelle actuel
      */
     public double getFacteurEchelle() {
-        return facteurEchelle;
+        return facteurEchelle.get();
     }
 
     /**
      * @return la position X actuelle
      */
     public int getPositionX() {
-        return positionX;
+        return positionX.get();
     }
 
     /**
      * @return la position Y actuelle
      */
     public int getPositionY() {
-        return positionY;
+        return positionY.get();
     }
 
+    /**
+     * @return la propriété du facteur d'échelle
+     */
+    public DoubleProperty facteurEchelleProperty() {
+        return facteurEchelle;
+    }
+
+    /**
+     * @return la propriété de position X
+     */
+    public IntegerProperty positionXProperty() {
+        return positionX;
+    }
+
+    /**
+     * @return la propriété de position Y
+     */
+    public IntegerProperty positionYProperty() {
+        return positionY;
+    }
 }

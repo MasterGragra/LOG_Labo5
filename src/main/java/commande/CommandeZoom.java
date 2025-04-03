@@ -5,7 +5,7 @@ import modele.Perspective;
 /**
  * Commande pour zoomer sur une perspective
  */
-public class ZoomCommand implements Command {
+public class CommandeZoom implements Command {
     private Perspective perspective;
     private double ancienFacteur;
     private double nouveauFacteur;
@@ -15,7 +15,7 @@ public class ZoomCommand implements Command {
      * @param perspective La perspective à zoomer
      * @param nouveauFacteur Le nouveau facteur de zoom
      */
-    public ZoomCommand(Perspective perspective, double nouveauFacteur) {
+    public CommandeZoom(Perspective perspective, double nouveauFacteur) {
         this.perspective = perspective;
         this.ancienFacteur = perspective.getFacteurEchelle(); // Save le zoom
         this.nouveauFacteur = nouveauFacteur;

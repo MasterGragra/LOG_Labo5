@@ -5,7 +5,7 @@ import modele.Perspective;
 /**
  * Commande pour traduire une perspective
  */
-public class TranslationCommand implements Command {
+public class CommandeTranslation implements Command {
     private Perspective perspective;
     private int ancientX;
     private int ancientY;
@@ -18,7 +18,7 @@ public class TranslationCommand implements Command {
      * @param nouveauX La nouvelle position en X
      * @param nouveauY La nouvelle position en Y
      */
-    public TranslationCommand(Perspective perspective, int nouveauX, int nouveauY) {
+    public CommandeTranslation(Perspective perspective, int nouveauX, int nouveauY) {
         this.perspective = perspective;
         this.ancientX = perspective.getPositionX(); // Save la position en X
         this.ancientY = perspective.getPositionY(); // Save la position en Y

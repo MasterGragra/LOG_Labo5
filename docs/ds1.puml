@@ -4,10 +4,11 @@ autonumber
 
 actor Utilisateur
 participant "StackPane\n(conteneur)" as Pane
+participant "ImageController" as Controller
 participant "ControleZoom" as Controle
-participant "Perspective" as Model
 participant "CommandManager" as CmdMgr
-participant "ZoomCommand" as Cmd
+participant "CommandeZoom" as Cmd
+participant "Perspective" as Model
 participant "VueAbstraite" as Vue
 
 Utilisateur -> Pane : scroll
@@ -17,65 +18,70 @@ activate Pane
         de la souris pour zoomer/dézoomer
     end note
 
-    Pane -> Controle : effectuerZoom(deltaY)
-    activate Controle
-        note right of Controle
-            Le contrôle capture l'état initial
-            avant de créer la commande
-        end note
-
-        Controle -> Controle : facteurZoomInitial = perspective.getFacteurEchelle()
-        Controle -> Controle : calculer facteurZoomFinal
-
-        Controle -> Cmd : <<create>>(perspective, facteurZoomFinal)
-        activate Cmd
-            Cmd --> Controle
-        deactivate Cmd
-
-        Controle -> Cmd : setFacteurInitial(facteurZoomInitial)
-        activate Cmd
-            Cmd --> Controle
-        deactivate Cmd
-
-        Controle -> CmdMgr : executeCommand(zoomCommand)
-        activate CmdMgr
-            note left of CmdMgr
-                Le CommandManager exécute la commande
-                et la stocke dans l'historique
+    Pane -> Controller : événement de défilement
+    activate Controller
+        Controller -> Controle : gererEvenement(event, TypeEvenement.SCROLL)
+        activate Controle
+            note right of Controle
+                Le contrôle vérifie si l'événement
+                est bien un ScrollEvent
             end note
 
-            CmdMgr -> Cmd : execute()
-            activate Cmd
-                Cmd -> Model : setFacteurEchelle(facteurZoomFinal)
-                activate Model
-                    Model -> Model : facteurEchelle.set(facteur)
-                    Model -> Model : notifyObservers()
-                    activate Model
-                        note right of Model
-                            Pattern Observer: la perspective
-                            notifie toutes les vues
-                            qui l'observent
-                        end note
+            Controle -> Controle : if (event instanceof ScrollEvent)
+            Controle -> Controle : facteurZoomInitial = perspective.getFacteurEchelle()
+            Controle -> Controle : facteurZoomFinal = facteurZoomInitial + (deltaY * 0.01)
 
-                        loop pour chaque observer
-                            Model -> Vue : update(subject)
-                            activate Vue
-                                Vue -> Vue : dessiner()
-                            deactivate Vue
-                        end
-                    deactivate Model
-                deactivate Model
-                Cmd --> CmdMgr
+            Controle -> Cmd : <<create>>(perspective, facteurZoomFinal)
+            activate Cmd
+                Cmd --> Controle
             deactivate Cmd
 
-            CmdMgr -> CmdMgr : commandesExecutees.push(command)
-            CmdMgr -> CmdMgr : clearRedoStack()
-            CmdMgr -> CmdMgr : updateProperties()
-            note right: Met à jour canUndoProperty et canRedoProperty
-            CmdMgr --> Controle
-        deactivate CmdMgr
-        Controle --> Pane
-    deactivate Controle
+            Controle -> Cmd : setFacteurInitial(facteurZoomInitial)
+            activate Cmd
+                Cmd --> Controle
+            deactivate Cmd
+
+            Controle -> CmdMgr : executeCommand(commandeZoom)
+            activate CmdMgr
+                note left of CmdMgr
+                    Le CommandManager exécute la commande
+                    et la stocke dans l'historique
+                end note
+
+                CmdMgr -> Cmd : execute()
+                activate Cmd
+                    Cmd -> Model : setFacteurEchelle(facteurZoomFinal)
+                    activate Model
+                        Model -> Model : facteurEchelle.set(facteur)
+                        Model -> Model : notifyObservers()
+                        activate Model
+                            note right of Model
+                                Pattern Observer: la perspective
+                                notifie toutes les vues
+                                qui l'observent
+                            end note
+
+                            loop pour chaque observer
+                                Model -> Vue : update(subject)
+                                activate Vue
+                                    Vue -> Vue : dessiner()
+                                deactivate Vue
+                            end
+                        deactivate Model
+                    deactivate Model
+                    Cmd --> CmdMgr
+                deactivate Cmd
+
+                CmdMgr -> CmdMgr : commandesExecutees.push(command)
+                CmdMgr -> CmdMgr : clearRedoStack()
+                CmdMgr -> CmdMgr : updateProperties()
+                note right: Met à jour canUndoProperty et canRedoProperty
+                CmdMgr --> Controle
+            deactivate CmdMgr
+            Controle --> Controller
+        deactivate Controle
+        Controller --> Pane
+    deactivate Controller
 deactivate Pane
 
 @enduml

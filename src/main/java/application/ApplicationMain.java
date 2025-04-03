@@ -72,7 +72,6 @@ public class ApplicationMain extends Application {
     @Override
     public void stop() {
         try {
-            // Effectuer les opérations de nettoyage si nécessaire
             super.stop();
         } catch (Exception e) {
             e.printStackTrace();

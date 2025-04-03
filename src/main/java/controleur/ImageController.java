@@ -15,9 +15,6 @@ import java.util.Map;
  * Contrôleur pour gérer les interactions avec les images
  */
 public class ImageController {
-//    // Références aux éléments FXML
-//    @FXML private StackPane panneau1, panneau2, panneau3;
-//    @FXML private ImageView imageComplete, image2, image3;
 
     // Listes pour stocker les perspectives et les vues
     private List<Perspective> perspectives = new ArrayList<>();
@@ -32,24 +29,6 @@ public class ImageController {
 
     // Référence au gestionnaire de commandes
     private final CommandManager commandManager = CommandManager.getInstance();
-
-//    /**
-//     * Méthode d'initialisation appelée après le chargement du fichier FXML
-//     */
-//    @FXML
-//    public void initialize() {
-//        System.out.println("ImageController initialized");
-//
-//        // Initialiser les collections
-//        imageViews.add(imageComplete);
-//        imageViews.add(image2);
-//        imageViews.add(image3);
-//
-//        // Ajouter les panneaux à la liste
-//        panes.add(panneau1);
-//        panes.add(panneau2);
-//        panes.add(panneau3);
-//    }
 
     /**
      * Configure les événements souris pour un panneau et sa perspective associée

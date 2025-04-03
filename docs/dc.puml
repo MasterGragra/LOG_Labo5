@@ -119,28 +119,23 @@ package "vue" #E3F2FD {
 
 package "controleur" #FFF3E0 {
   interface ControleSouris {
-    +gererMousePressed(evt: MouseEvent)
-    +gererMouseDragged(evt: MouseEvent)
-    +gererMouseReleased(evt: MouseEvent)
+    +enum TypeEvenement { CLIQUE, DRAG, RELACHE, SCROLL }
+    +gererEvenement(event: Event, type: TypeEvenement)
   }
   note right of ControleSouris
-    Pattern Strategy: permet de changer
-    dynamiquement le comportement
-    des vues face aux événements souris
+    Pattern Strategy modifié:
+    - Utilise un Event générique
+    - Supporte différents types d'événements
+    - Permet le traitement des événements souris et défilement
   endnote
 
   class ControleZoom {
     -perspective: Perspective
     -commandManager: CommandManager
     -facteurZoomInitial: double
-    -positionXInitiale: double
-    -positionYInitiale: double
     +ControleZoom(perspective: Perspective)
-    +gererMousePressed(evt: MouseEvent)
-    +gererMouseDragged(evt: MouseEvent)
-    +gererMouseReleased(evt: MouseEvent)
-    +effectuerZoom(deltaY: double)
-}
+    +gererEvenement(event: Event, type: TypeEvenement)
+  }
 
   class ControleTranslation {
     -perspective: Perspective
@@ -150,16 +145,14 @@ package "controleur" #FFF3E0 {
     -perspectiveXInitiale: int
     -perspectiveYInitiale: int
     +ControleTranslation(perspective: Perspective)
-    +gererMousePressed(evt: MouseEvent)
-    +gererMouseDragged(evt: MouseEvent)
-    +gererMouseReleased(evt: MouseEvent)
+    +gererEvenement(event: Event, type: TypeEvenement)
   }
 
   class ImageController {
     -perspectives: List<Perspective>
     -imageViews: List<ImageView>
     -panes: List<StackPane>
-    -strategies: Map<StackPane, ControleSouris>
+    -controleSourisHashMap: Map<StackPane, ControleSouris>
     -controleZooms: Map<StackPane, ControleZoom>
     -commandManager: CommandManager
     +configurerEvenementsSouris(pane: StackPane, perspective: Perspective, vue: VueInteractive)
@@ -169,6 +162,8 @@ package "controleur" #FFF3E0 {
     Contrôleur responsable de
     lier les vues JavaFX aux perspectives
     et configurer les interactions utilisateur
+    - Utilise maintenant des événements Event génériques
+    - Distingue les événements souris et défilement
   endnote
 }
 
@@ -183,23 +178,23 @@ package "commande" #F3E5F5 {
     ou l'annuler ultérieurement
   endnote
 
-  class ZoomCommand implements Command {
+  class CommandeZoom implements Command {
     -perspective: Perspective
     -ancienFacteur: double
     -nouveauFacteur: double
-    +ZoomCommand(perspective: Perspective, nouveauFacteur: double)
+    +CommandeZoom(perspective: Perspective, nouveauFacteur: double)
     +setFacteurInitial(facteurInitial: double)
     +execute()
     +undo()
   }
 
-  class TranslationCommand implements Command {
+  class CommandeTranslation implements Command {
     -perspective: Perspective
     -ancienX: int
     -ancienY: int
     -nouveauX: int
     -nouveauY: int
-    +TranslationCommand(perspective: Perspective, nouveauX: int, nouveauY: int)
+    +CommandeTranslation(perspective: Perspective, nouveauX: int, nouveauY: int)
     +setPositionInitiale(initialX: int, initialY: int)
     +execute()
     +undo()

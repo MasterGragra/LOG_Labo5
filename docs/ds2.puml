@@ -4,7 +4,7 @@ title Diagramme de séquence de l'annulation d'une commande zoom
 actor Utilisateur
 participant "GestionnaireInterface" as GUI
 participant "CommandManager" as CmdMgr
-participant "ZoomCommand" as Cmd
+participant "CommandeZoom" as Cmd
 participant "Perspective" as Model
 participant "VueAbstraite" as Vue
 
@@ -45,7 +45,7 @@ activate GUI
                     end note
 
                     loop pour chaque observer
-                        Model -> Vue : update(perspective)
+                        Model -> Vue : update(subject)
                         activate Vue
                             Vue -> Vue : dessiner()
                         deactivate Vue

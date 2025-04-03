@@ -3,45 +3,79 @@ title Diagramme de séquence de la commande zoom
 autonumber
 
 actor Utilisateur
-participant "VuePrincipale" as Vue
+participant "StackPane\n(conteneur)" as Pane
 participant "ControleZoom" as Controle
+participant "Perspective" as Model
 participant "CommandManager" as CmdMgr
 participant "ZoomCommand" as Cmd
-participant "Perspective" as Model
+participant "VueAbstraite" as Vue
 
-Utilisateur -> Vue : Interaction souris
-activate Vue
-    Vue -> Controle : gererMouseDragged(evt)
+Utilisateur -> Pane : scroll
+activate Pane
+    note left of Pane
+        L'utilisateur utilise la molette
+        de la souris pour zoomer/dézoomer
+    end note
+
+    Pane -> Controle : effectuerZoom(deltaY)
     activate Controle
-        Controle -> Controle : calculer nouveau facteur d'échelle
-        Controle -> CmdMgr : executeCommand(cmd)
+        note right of Controle
+            Le contrôle capture l'état initial
+            avant de créer la commande
+        end note
+
+        Controle -> Controle : facteurZoomInitial = perspective.getFacteurEchelle()
+        Controle -> Controle : calculer facteurZoomFinal
+
+        Controle -> Cmd : <<create>>(perspective, facteurZoomFinal)
+        activate Cmd
+            Cmd --> Controle
+        deactivate Cmd
+
+        Controle -> Cmd : setFacteurInitial(facteurZoomInitial)
+        activate Cmd
+            Cmd --> Controle
+        deactivate Cmd
+
+        Controle -> CmdMgr : executeCommand(zoomCommand)
         activate CmdMgr
-            CmdMgr -> Cmd : <<create>>\n(perspective, nouveauFacteur)
-            activate Cmd
-                Cmd --> CmdMgr
-            deactivate Cmd
+            note left of CmdMgr
+                Le CommandManager exécute la commande
+                et la stocke dans l'historique
+            end note
 
             CmdMgr -> Cmd : execute()
             activate Cmd
-                Cmd -> Model : setFacteurEchelle(nouveauFacteur)
+                Cmd -> Model : setFacteurEchelle(facteurZoomFinal)
                 activate Model
+                    Model -> Model : facteurEchelle.set(facteur)
                     Model -> Model : notifyObservers()
                     activate Model
-                        Model -> Vue : update()
-                        activate Vue
-                            Vue -> Vue : dessiner()
-                        deactivate Vue
+                        note right of Model
+                            Pattern Observer: la perspective
+                            notifie toutes les vues
+                            qui l'observent
+                        end note
+
+                        loop pour chaque observer
+                            Model -> Vue : update(subject)
+                            activate Vue
+                                Vue -> Vue : dessiner()
+                            deactivate Vue
+                        end
                     deactivate Model
                 deactivate Model
                 Cmd --> CmdMgr
             deactivate Cmd
 
-            CmdMgr -> CmdMgr : ajouterCommande(cmd)
+            CmdMgr -> CmdMgr : commandesExecutees.push(command)
             CmdMgr -> CmdMgr : clearRedoStack()
+            CmdMgr -> CmdMgr : updateProperties()
+            note right: Met à jour canUndoProperty et canRedoProperty
             CmdMgr --> Controle
         deactivate CmdMgr
-        Controle --> Vue
+        Controle --> Pane
     deactivate Controle
-deactivate Vue
+deactivate Pane
 
 @enduml

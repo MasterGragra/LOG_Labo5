@@ -75,9 +75,6 @@ public class ControleZoom implements ControleSouris {
         // Calculer le nouveau facteur de zoom
         double facteurZoomFinal = facteurZoomInitial + (deltaY * 0.01);
 
-        // Appliquer directement le zoom
-        perspective.setFacteurEchelle(facteurZoomFinal);
-
         // Créer et exécuter la commande
         ZoomCommand zoomCommand = new ZoomCommand(perspective, facteurZoomFinal);
         zoomCommand.setFacteurInitial(facteurZoomInitial);

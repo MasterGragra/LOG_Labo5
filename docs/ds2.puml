@@ -8,27 +8,61 @@ participant "ZoomCommand" as Cmd
 participant "Perspective" as Model
 participant "VueAbstraite" as Vue
 
-Utilisateur -> GUI : clique sur bouton "Annuler"
+Utilisateur -> GUI : clique sur bouton "Annuler" \nou utilise raccourci Ctrl+Z
 activate GUI
+    note right of GUI
+        Le GestionnaireInterface gère les événements
+        de l'interface utilisateur (menus, raccourcis)
+    end note
+
     GUI -> CmdMgr : undo()
     activate CmdMgr
+        CmdMgr -> CmdMgr : canUndo()
+        note right of CmdMgr
+            Le CommandManager vérifie si
+            des commandes sont disponibles
+            pour l'annulation
+        end note
+
         CmdMgr -> CmdMgr : command = commandesExecutees.pop()
         CmdMgr -> Cmd : undo()
         activate Cmd
+            note left of Cmd
+                La commande contient l'état
+                précédent permettant de
+                restaurer la perspective
+            end note
+
             Cmd -> Model : setFacteurEchelle(ancienFacteur)
             activate Model
+                Model -> Model : facteurEchelle.set(facteur)
                 Model -> Model : notifyObservers()
                 activate Model
-                    Model -> Vue : update()
-                    activate Vue
-                        Vue -> Vue : dessiner()
-                    deactivate Vue
+                    note right of Model
+                        Pattern Observer: la perspective
+                        notifie toutes les vues
+                        qui l'observent
+                    end note
+
+                    loop pour chaque observer
+                        Model -> Vue : update(perspective)
+                        activate Vue
+                            Vue -> Vue : dessiner()
+                        deactivate Vue
+                    end
                 deactivate Model
             deactivate Model
             Cmd --> CmdMgr
         deactivate Cmd
 
         CmdMgr -> CmdMgr : commandesAnnulees.push(command)
+        CmdMgr -> CmdMgr : updateProperties()
+        note right: Met à jour canUndoProperty et canRedoProperty
+        note left of CmdMgr
+            Les commandes annulées sont conservées
+            pour permettre le rétablissement (redo)
+        end note
+
         CmdMgr --> GUI
     deactivate CmdMgr
     GUI --> Utilisateur : affichage mis à jour

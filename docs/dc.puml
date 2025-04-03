@@ -18,7 +18,7 @@ package "modele" #E8F5E9 {
     +detach(observer: Observer)
     +notifyObservers()
   }
-  note right of Image
+  note left of Image
     Représente l'image originale
     Sujet dans le pattern Observer
   endnote
@@ -188,6 +188,7 @@ package "commande" #F3E5F5 {
     -ancienFacteur: double
     -nouveauFacteur: double
     +ZoomCommand(perspective: Perspective, nouveauFacteur: double)
+    +setFacteurInitial(facteurInitial: double)
     +execute()
     +undo()
   }
@@ -199,6 +200,7 @@ package "commande" #F3E5F5 {
     -nouveauX: int
     -nouveauY: int
     +TranslationCommand(perspective: Perspective, nouveauX: int, nouveauY: int)
+    +setPositionInitiale(initialX: int, initialY: int)
     +execute()
     +undo()
   }
@@ -207,12 +209,22 @@ package "commande" #F3E5F5 {
     -static instance: CommandManager
     -commandesExecutees: Stack<Command>
     -commandesAnnulees: Stack<Command>
+    -static TAILLE_MAX_HISTORIQUE: int
+    -canUndoProperty: ReadOnlyBooleanWrapper
+    -canRedoProperty: ReadOnlyBooleanWrapper
     -CommandManager()
     +static getInstance(): CommandManager
     +executeCommand(command: Command)
     +undo()
     +redo()
     +clearRedoStack()
+    +canUndo(): boolean
+    +canRedo(): boolean
+    +canUndoProperty(): ReadOnlyBooleanProperty
+    +canRedoProperty(): ReadOnlyBooleanProperty
+    -updateProperties()
+    +getUndoStackSize(): int
+    +getRedoStackSize(): int
   }
   note right of CommandManager
     Pattern Singleton: assure une instance unique
@@ -231,7 +243,7 @@ package "memento" #FFEBEE {
     +getPositionX(): int
     +getPositionY(): int
   }
-  note left of PerspectiveMemento
+  note right of PerspectiveMemento
     Pattern Memento: capture l'état interne
     d'une perspective pour restauration future
   endnote
@@ -249,13 +261,15 @@ package "memento" #FFEBEE {
 
 package "application" #E0F7FA {
   class ApplicationMain extends Application {
+    -controller: ApplicationController
+    -gestionnaireInterface: GestionnaireInterface
     +main(args: String[])
-    +demarrer(primaryStage: Stage)
+    +start(primaryStage: Stage)
     +stop()
   }
   note left of ApplicationMain
     Point d'entrée JavaFX
-    Initialise l'application
+    Gère la configuration initiale de l'interface et le cycle de vie de l'application
   endnote
 
   class ApplicationController {
@@ -283,7 +297,7 @@ package "application" #E0F7FA {
     +ajouterVue(conteneur: Pane, vue: VueAbstraite)
     +configurerRaccourcisClavier(scene: Scene)
   }
-  note left of GestionnaireInterface
+  note right of GestionnaireInterface
     Gestion de l'interface utilisateur
     Création des fenêtres, menus, etc.
   endnote
@@ -293,8 +307,6 @@ package "application" #E0F7FA {
 Subject "1" -- "0..*" Observer : observe >
 Image "1" *-- "0..*" Perspective
 Perspective -- PerspectiveMemento : crée >
-
-' Nouvelles relations pour VueAbstraite
 VueAbstraite -- Perspective : observe >
 VueInteractive -- ControleSouris : utilise >
 
@@ -309,9 +321,27 @@ Perspective -- ImageController : manipule >
 ' Relations d'application
 ApplicationController -- Sauvegarde : utilise >
 ApplicationController "1" o-- "*" Perspective
+ApplicationController "1" -- "1" ImageController : utilise >
+ApplicationController "1" o-- "*" VueAbstraite : gère >
 ApplicationMain -- ApplicationController : utilise >
 ApplicationMain -- GestionnaireInterface : utilise >
 
-note "Architecture MVC avec JavaFX:\n- Modèle: Image, Perspective\n- Vue: VueAbstraite et ses sous-classes\n- Contrôleur: ImageController, ControleZoom, ControleTranslation" as N1
-note "Patrons de conception utilisés:\n- Observer: Subject/Observer pour MVC\n- Command: Pour undo/redo\n- Strategy: ControleSouris pour comportements\n- Memento: PerspectiveMemento pour sauvegarde d'état\n- Singleton: CommandManager comme gestionnaire unique" as N2
+note as N1
+Architecture MVC avec JavaFX:
+- Modèle: Image, Perspective
+- Vue: VueAbstraite et ses sous-classes
+- Contrôleur: ImageController, ControleZoom, ControleTranslation
+end note
+
+note as N2
+Patrons de conception utilisés:
+- Observer: Subject/Observer pour MVC
+- Command: Pour undo/redo
+- Strategy: ControleSouris pour comportements
+- Memento: PerspectiveMemento pour sauvegarde d'état
+- Singleton: CommandManager comme gestionnaire unique
+end note
+
+N1 -[hidden]-> N2
+N2 -[hidden]-> vue
 @enduml

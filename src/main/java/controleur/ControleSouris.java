@@ -1,6 +1,6 @@
 package controleur;
 
-import javafx.scene.input.MouseEvent;
+import javafx.event.Event;
 
 /**
  * Interface pour gérer les événements de la souris
@@ -8,7 +8,11 @@ import javafx.scene.input.MouseEvent;
  */
 public interface ControleSouris {
 
-    void gererMousePressed(MouseEvent event);
-    void gererMouseDragged(MouseEvent event);
-    void gererMouseReleased(MouseEvent event);
+    // Méthode générique pour gérer les événements souris
+    void gererEvenement(Event event, TypeEvenement type);
+
+    // Enum pour les différents types d'événements
+    enum TypeEvenement {
+        CLIQUE, DRAG, RELACHE, SCROLL
+    }
 }

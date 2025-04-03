@@ -89,29 +89,24 @@ public class ImageController {
         }
 
         // Déléguer les événements directement au panneau et au contrôleur approprié
-        pane.setOnScroll(event -> {
-            controleZooms.get(pane).effectuerZoom(event.getDeltaY());
-            event.consume();
-        });
-
         pane.setOnMousePressed(event -> {
-            vue.getControleSouris().gererMousePressed(event);
+            vue.getControleSouris().gererEvenement(event, ControleSouris.TypeEvenement.CLIQUE);
             event.consume();
         });
 
         pane.setOnMouseDragged(event -> {
-            vue.getControleSouris().gererMouseDragged(event);
+            vue.getControleSouris().gererEvenement(event, ControleSouris.TypeEvenement.DRAG);
             event.consume();
         });
 
         pane.setOnMouseReleased(event -> {
-            vue.getControleSouris().gererMouseReleased(event);
+            vue.getControleSouris().gererEvenement(event, ControleSouris.TypeEvenement.RELACHE);
             event.consume();
         });
 
         pane.setOnScroll(event -> {
             System.out.println("Événement de défilement détecté: " + event.getDeltaY());
-            controleZooms.get(pane).effectuerZoom(event.getDeltaY());
+            controleZooms.get(pane).gererEvenement(event, ControleSouris.TypeEvenement.SCROLL);
             event.consume();
         });
     }

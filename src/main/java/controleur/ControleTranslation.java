@@ -1,7 +1,8 @@
 package controleur;
 
 import commande.CommandManager;
-import commande.TranslationCommand;
+import commande.CommandeTranslation;
+import javafx.event.Event;
 import javafx.scene.input.MouseEvent;
 import modele.Perspective;
 
@@ -10,8 +11,8 @@ import modele.Perspective;
  * Cette classe gère les événements de souris pour déplacer la perspective
  */
 public class ControleTranslation implements ControleSouris {
-    private Perspective perspective;
-    private CommandManager commandManager;
+    private Perspective perspective; // La perspective à contrôler
+    private CommandManager commandManager; // Référence au gestionnaire de commandes
     private double sourisXInitiale, sourisYInitiale;  // Position initiale de la souris
     private int perspectiveXInitiale, perspectiveYInitiale;  // Position initiale de la perspective
 
@@ -25,58 +26,56 @@ public class ControleTranslation implements ControleSouris {
     }
 
     /**
-     * Méthode appelée lorsque la souris est pressée
+     * Méthode appelée lorsque la souris est utilisée pour déplacer la perspective
      * @param event L'événement de souris
+     * @param type Le type d'événement
      */
     @Override
-    public void gererMousePressed(MouseEvent event) {
-        // Enregistrer la position initiale de la souris
-        sourisXInitiale = event.getSceneX();
-        sourisYInitiale = event.getSceneY();
+    public void gererEvenement(Event event, TypeEvenement type) {
+        if (!(event instanceof MouseEvent mouseEvent)) {
+            return;  // Ignorer les événements qui ne sont pas des MouseEvent
+        }
 
-        // Enregistrer la position initiale de la perspective
-        perspectiveXInitiale = perspective.getPositionX();
-        perspectiveYInitiale = perspective.getPositionY();
-    }
+        switch (type) {
+            case CLIQUE:
+                // Enregistrer les positions initiales
+                sourisXInitiale = mouseEvent.getSceneX();
+                sourisYInitiale = mouseEvent.getSceneY();
+                perspectiveXInitiale = perspective.getPositionX();
+                perspectiveYInitiale = perspective.getPositionY();
+                break;
 
-    /**
-     * Méthode appelée lorsque la souris est déplacée
-     * @param event L'événement de souris
-     */
-    @Override
-    public void gererMouseDragged(MouseEvent event) {
-        // Calculer le déplacement
-        double deltaX = event.getSceneX() - sourisXInitiale;
-        double deltaY = event.getSceneY() - sourisYInitiale;
+            case DRAG:
+                // Calculer et appliquer le déplacement
+                double deltaX = mouseEvent.getSceneX() - sourisXInitiale;
+                double deltaY = mouseEvent.getSceneY() - sourisYInitiale;
+                perspective.setPosition(
+                        perspectiveXInitiale + (int)deltaX,
+                        perspectiveYInitiale + (int)deltaY
+                );
+                break;
 
-        // Appliquer directement le déplacement
-        perspective.setPosition(
-                perspectiveXInitiale + (int)deltaX,
-                perspectiveYInitiale + (int)deltaY
-        );
-    }
+            case RELACHE:
+                // Calculer la position finale
+                deltaX = mouseEvent.getSceneX() - sourisXInitiale;
+                deltaY = mouseEvent.getSceneY() - sourisYInitiale;
 
-    /**
-     * Méthode appelée lorsque la souris est relâchée
-     * @param event L'événement de souris
-     */
-    @Override
-    public void gererMouseReleased(MouseEvent event) {
-        // Calculer la position finale
-        double deltaX = event.getSceneX() - sourisXInitiale;
-        double deltaY = event.getSceneY() - sourisYInitiale;
+                // Appliquer le déplacement à la perspective
+                int finalX = perspectiveXInitiale + (int)deltaX;
+                int finalY = perspectiveYInitiale + (int)deltaY;
 
-        // Appliquer le déplacement à la perspective
-        int finalX = (int)(perspectiveXInitiale + deltaX);
-        int finalY = (int)(perspectiveYInitiale + deltaY);
+                // Ne créer une commande que si la position a changé
+                if (finalX != perspectiveXInitiale || finalY != perspectiveYInitiale) {
+                    CommandeTranslation command = new CommandeTranslation(perspective, finalX, finalY);
 
-        // Ne créer une commande que si la position a changé
-        if (finalX != perspectiveXInitiale || finalY != perspectiveYInitiale) {
-            TranslationCommand command = new TranslationCommand(perspective, finalX, finalY);
+                    // Définir explicitement la position initiale
+                    command.setPositionInitiale(perspectiveXInitiale, perspectiveYInitiale);
+                    commandManager.executeCommand(command);
+                }
+                break;
 
-            // Définir explicitement la position initiale
-            command.setPositionInitiale(perspectiveXInitiale, perspectiveYInitiale);
-            commandManager.executeCommand(command);
+            default:
+                break;  // SCROLL et autres cas non gérés
         }
     }
 }

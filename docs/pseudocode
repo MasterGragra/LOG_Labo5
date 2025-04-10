@@ -1,4 +1,331 @@
 /**
+ * Point d'entrée de l'application JavaFX
+ */
+CLASSE ApplicationMain ÉTEND Application
+    // Attributs
+    PRIVÉ ApplicationController controller
+    PRIVÉ GestionnaireInterface gestionnaireInterface
+
+    /**
+     * Point d'entrée principal de l'application
+     */
+    PUBLIC STATIC VOID main(String[] args)
+        launch(args)
+    FIN MÉTHODE
+
+    /**
+     * Méthode de démarrage JavaFX
+     */
+    @OVERRIDE
+    PUBLIC VOID start(Stage primaryStage)
+        ESSAYER
+            // Initialiser les composants principaux
+            controller = nouveau ApplicationController()
+            gestionnaireInterface = nouveau GestionnaireInterface()
+
+            // Connecter le contrôleur à l'interface
+            gestionnaireInterface.setController(controller)
+
+            // Créer l'interface programmatiquement
+            Parent root = controller.creerInterface()
+
+            // Ajouter le menu en haut
+            BorderPane borderPane = (BorderPane) root
+            VBox topContainer = nouvelle VBox()
+            MenuBar menuBar = gestionnaireInterface.creerMenu(null)
+            topContainer.getChildren().add(menuBar)
+
+            // Si le haut contient déjà la vue fixe
+            SI (borderPane.getTop() != null) ALORS
+                topContainer.getChildren().add(borderPane.getTop())
+            FIN SI
+
+            borderPane.setTop(topContainer)
+
+            // Créer la scène
+            Scene scene = nouvelle Scene(borderPane, 1200, 800)
+            gestionnaireInterface.configurerRaccourcisClavier(scene)
+
+            // Configurer la fenêtre
+            primaryStage.setTitle("Éditeur d'images")
+            primaryStage.setScene(scene)
+            primaryStage.show()
+
+            // Charger une image de test
+            controller.chargerImage("src/main/resources/anger.png")
+        ATTRAPER (Exception e)
+            e.printStackTrace()
+        FIN ESSAYER
+    FIN MÉTHODE
+
+    /**
+     * Méthode appelée lors de la fermeture de l'application
+     */
+    @OVERRIDE
+    PUBLIC VOID stop()
+        ESSAYER
+            super.stop()
+        ATTRAPER (Exception e)
+            e.printStackTrace()
+        FIN ESSAYER
+    FIN MÉTHODE
+FIN CLASSE
+
+/**
+ * Contrôleur principal de l'application
+ * Coordonne les modèles, vues et contrôleurs
+ */
+CLASSE ApplicationController
+    // Attributs
+    PRIVÉ List<Perspective> perspectives
+    PRIVÉ Map<String, VueAbstraite> vues
+    PRIVÉ ImageController imageController
+    PRIVÉ Sauvegarde sauvegarde
+
+    /**
+     * Constructeur
+     */
+    CONSTRUCTEUR ApplicationController()
+        perspectives = nouvelle ArrayList<>()
+        vues = nouvelle HashMap<>()
+        sauvegarde = nouvelle Sauvegarde()
+
+        // Initialisation des modèles et des vues
+        initialiserModeles()
+        initialiserVues()
+    FIN CONSTRUCTEUR
+
+    /**
+     * Initialise les modèles de l'application
+     */
+    PUBLIC VOID initialiserModeles()
+        // Créer une instance commune de Image
+        Image image = nouvelle Image()
+
+        // Créer deux perspectives distinctes qui partagent la même image
+        Perspective perspectivePrincipale = nouvelle Perspective(image)
+        Perspective perspectiveSecondaire = nouvelle Perspective(image)
+
+        // Ajouter les deux perspectives à la liste
+        perspectives.add(perspectivePrincipale)
+        perspectives.add(perspectiveSecondaire)
+    FIN MÉTHODE
+
+    /**
+     * Initialise les vues de l'application en s'appuyant sur les perspectives
+     */
+    PUBLIC VOID initialiserVues()
+        SI (perspectives.estVide()) ALORS
+            RETOURNER
+        FIN SI
+
+        // Utiliser des perspectives distinctes pour chaque vue
+        Perspective perspectivePrincipale = perspectives.getFirst()
+        Perspective perspectiveSecondaire = perspectives.get(1)
+
+        // Créer les vues associées aux perspectives
+        VuePrincipale vuePrincipale = nouvelle VuePrincipale(perspectivePrincipale)
+        VueFixe vueFixe = nouvelle VueFixe(perspectivePrincipale)
+        VueSecondaire vueSecondaire = nouvelle VueSecondaire(perspectiveSecondaire)
+
+        // Stocker les vues dans la map
+        vues.put("principale", vuePrincipale)
+        vues.put("miniature", vueFixe)
+        vues.put("secondaire", vueSecondaire)
+    FIN MÉTHODE
+
+    /**
+     * Crée et configure l'interface utilisateur
+     * @return Le conteneur racine de l'interface
+     */
+    PUBLIC Parent creerInterface()
+        // Créer un conteneur principal de type BorderPane
+        BorderPane root = nouveau BorderPane()
+
+        // Créer un HBox pour aligner horizontalement les vues avec un espacement de 5
+        HBox conteneurPrincipal = nouveau HBox(5)
+        conteneurPrincipal.setStyle("-fx-padding: 10;")
+        conteneurPrincipal.setFillHeight(true)
+
+        // Lier les dimensions du HBox aux dimensions du BorderPane
+        conteneurPrincipal.largeurPréférée.bind(root.propriétéLargeur)
+        conteneurPrincipal.hauteurPréférée.bind(root.propriétéHauteur)
+
+        // Créer trois conteneurs StackPane pour les vues
+        StackPane conteneurMiniature = nouveau StackPane()
+        StackPane conteneurPrincipale = nouveau StackPane()
+        StackPane conteneurSecondaire = nouveau StackPane()
+
+        // Assigner une croissance égale pour occuper 1/3 de l'espace chacun
+        HBox.assignerCroissance(conteneurMiniature, PRIORITÉ.ALWAYS)
+        HBox.assignerCroissance(conteneurPrincipale, PRIORITÉ.ALWAYS)
+        HBox.assignerCroissance(conteneurSecondaire, PRIORITÉ.ALWAYS)
+
+        // Définir la largeur préférée des conteneurs (1/3 de l'espace disponible moins un décalage)
+        POUR CHAQUE conteneur DANS [conteneurMiniature, conteneurPrincipale, conteneurSecondaire] FAIRE
+            conteneur.largeurPréférée.bind(conteneurPrincipal.largeur.multiply(1/3).moins(10))
+        FIN POUR
+
+        // Appliquer des styles pour visualiser les bordures
+        conteneurMiniature.setStyle("-fx-border-color: red; -fx-border-width: 2px;")
+        conteneurPrincipale.setStyle("-fx-border-color: blue; -fx-border-width: 2px;")
+        conteneurSecondaire.setStyle("-fx-border-color: green; -fx-border-width: 2px;")
+
+        // Ajouter les vues dans leurs conteneurs respectifs si elles existent
+        SI (vues.contient("miniature")) ALORS
+            Pane vueMiniature = vues.get("miniature").getPane()
+            conteneurMiniature.ajouterEnfant(vueMiniature)
+            vueMiniature.largeurPréférée.bind(conteneurMiniature.largeur)
+            vueMiniature.hauteurPréférée.bind(conteneurMiniature.hauteur)
+            vueMiniature.setMaxSize(Infini, Infini)
+        FIN SI
+
+        SI (vues.contient("principale")) ALORS
+            Pane vuePrincipale = vues.get("principale").getPane()
+            conteneurPrincipale.ajouterEnfant(vuePrincipale)
+            vuePrincipale.largeurPréférée.bind(conteneurPrincipale.largeur)
+            vuePrincipale.hauteurPréférée.bind(conteneurPrincipale.hauteur)
+            vuePrincipale.setMaxSize(Infini, Infini)
+        FIN SI
+
+        SI (vues.contient("secondaire")) ALORS
+            Pane vueSecondaire = vues.get("secondaire").getPane()
+            conteneurSecondaire.ajouterEnfant(vueSecondaire)
+            vueSecondaire.largeurPréférée.bind(conteneurSecondaire.largeur)
+            vueSecondaire.hauteurPréférée.bind(conteneurSecondaire.hauteur)
+            vueSecondaire.setMaxSize(Infini, Infini)
+        FIN SI
+
+        // Placer les conteneurs de vue dans le HBox principal
+        conteneurPrincipal.ajouterEnfants([conteneurMiniature, conteneurPrincipale, conteneurSecondaire])
+        // Positionner le HBox au centre du BorderPane
+        root.setCentre(conteneurPrincipal)
+
+        // Créer et configurer l'ImageController
+        imageController = nouveau ImageController()
+
+        // Vérifier que les modèles sont bien initialisés
+        SI (perspectives.estVide() OU perspectives.get(0) EST null) ALORS
+            initialiserModeles()
+        FIN SI
+
+        // Associer les perspectives aux vues
+        Perspective perspectivePrincipale = perspectives.get(0)
+        Perspective perspectiveSecondaire = perspectives.get(1)
+
+        // Configurer les événements souris pour les vues interactives
+        SI (vues.get("principale") est une instance de VueInteractive ALORS vuePrincipaleInteractif) ALORS
+            imageController.configurerEvenementsSouris(conteneurPrincipale, perspectivePrincipale, vuePrincipaleInteractif)
+        FIN SI
+
+        SI (vues.get("secondaire") est une instance de VueInteractive ALORS vueSecondaireInteractif) ALORS
+            imageController.configurerEvenementsSouris(conteneurSecondaire, perspectiveSecondaire, vueSecondaireInteractif)
+        FIN SI
+
+        // Forcer le rendu initial de toutes les vues dans le thread d'interface utilisateur
+        Platform.runLater(POUR CHAQUE vue DANS vues.valeurs FAIRE
+            vue.renduInitial()
+        FIN POUR)
+
+        RETOURNER root
+    FIN MÉTHODE
+
+    /**
+     * Sauvegarde l'état de la perspective secondaire
+     * @param fichier Chemin du fichier de sauvegarde
+     */
+    PUBLIC VOID sauvegarderEtat(String fichier)
+        ESSAYER
+            // Créer une liste temporaire contenant uniquement la perspective de la VueSecondaire
+            List<Perspective> perspectiveASauvegarder = nouvelle ArrayList<>()
+            SI (perspectives.taille() >= 2) ALORS
+                // Sauvegarde uniquement la perspective secondaire
+                perspectiveASauvegarder.add(perspectives.get(1))
+                sauvegarde.sauvegarderEtat(perspectiveASauvegarder, fichier)
+                Afficher "Perspective secondaire sauvegardée dans " + fichier
+            SINON
+                Afficher "Impossible de sauvegarder : la perspective secondaire n'existe pas"
+            FIN SI
+        ATTRAPER (IOException e)
+            Afficher "Erreur lors de la sauvegarde : " + e.getMessage()
+            e.printStackTrace()
+        FIN ESSAYER
+    FIN MÉTHODE
+
+    /**
+     * Charge une perspective sauvegardée et l'applique à la VuePrincipale
+     * @param fichier Chemin du fichier de sauvegarde
+     */
+    PUBLIC VOID chargerSauvegarde(String fichier)
+        ESSAYER
+            SI (sauvegarde.fichierExiste(fichier)) ALORS
+                List<Perspective> perspectivesChargees = sauvegarde.chargerEtat(fichier)
+                SI (perspectivesChargees n'est pas vide) ALORS
+                    // Récupérer la perspective chargée
+                    Perspective perspectiveChargee = perspectivesChargees.get(0)
+
+                    // Appliquer à la perspective principale (index 0)
+                    SI (perspectives n'est pas vide) ALORS
+                        Perspective perspectivePrincipale = perspectives.get(0)
+
+                        // Appliquer la position et le zoom de la perspective chargée
+                        perspectivePrincipale.setPosition(perspectiveChargee.getPositionX(),
+                                                         perspectiveChargee.getPositionY())
+                        perspectivePrincipale.setFacteurEchelle(perspectiveChargee.getFacteurEchelle())
+
+                        // Si l'image est différente, la charger également
+                        SI (perspectiveChargee.getImage().getChemin() n'est pas null ET
+                            perspectiveChargee.getImage().getChemin() diffère de
+                            perspectivePrincipale.getImage().getChemin()) ALORS
+                            perspectivePrincipale.getImage().chargerImage(
+                                perspectiveChargee.getImage().getChemin())
+                        FIN SI
+
+                        // Mettre à jour la vue principale
+                        VueAbstraite vuePrincipale = vues.get("principale")
+                        SI (vuePrincipale n'est pas null) ALORS
+                            Platform.runLater(vuePrincipale::renduInitial)
+                        FIN SI
+
+                        Afficher "Perspective secondaire chargée et appliquée à la vue principale"
+                    FIN SI
+                FIN SI
+            SINON
+                Afficher "Le fichier de sauvegarde n'existe pas : " + fichier
+            FIN SI
+        ATTRAPER (IOException OU ClassNotFoundException e)
+            Afficher "Erreur lors du chargement : " + e.getMessage()
+            e.printStackTrace()
+        FIN ESSAYER
+    FIN MÉTHODE
+
+    /**
+     * Charge une image dans le modèle à partir d'un chemin
+     * @param cheminImage Chemin de l'image à charger
+     */
+    PUBLIC VOID chargerImage(String cheminImage)
+        SI (perspectives n'est pas vide) ALORS
+            Perspective perspective = perspectives.getFirst()
+            perspective.getImage().chargerImage(cheminImage)
+        FIN SI
+    FIN MÉTHODE
+
+    /**
+     * Retourne la liste des perspectives
+     */
+    PUBLIC List<Perspective> getPerspectives()
+        RETOURNER perspectives
+    FIN MÉTHODE
+
+    /**
+     * Retourne la map des vues
+     */
+    PUBLIC Map<String, VueAbstraite> getVues()
+        RETOURNER vues
+    FIN MÉTHODE
+FIN CLASSE
+
+/**
  * Interface qui définit les méthodes nécessaires pour le pattern Observer
  * - Permet à un objet d'attacher, détacher et notifier ses observateurs
  * - Utilisée par les objets observables (comme Perspective) qui doivent
@@ -24,66 +351,115 @@ INTERFACE Subject
 FIN INTERFACE
 
 /**
- * Classe qui représente une image à afficher dans l'application
- * - Encapsule les données d'une image et ses métadonnées
- * - Implémente Serializable pour permettre la sauvegarde
+ * Classe Image
+ * Représente une image via son chemin, une instance JavaFX (non sérialisable)
+ * et gère les observateurs (pattern Observer) ainsi que la persistance (Serializable)
  */
-CLASSE Image IMPLÉMENTE Serializable
+CLASSE Image IMPLÉMENTE Subject, Serializable
     // Attributs
-    PRIVÉ BufferedImage donnees
-    PRIVÉ String nom
-    PRIVÉ int largeur
-    PRIVÉ int hauteur
+    PRIVÉ String chemin
+    PRIVÉ TRANSIENT javafx.scene.image.Image imageJavaFX
+    PRIVÉ TRANSIENT List<Observer> observers = nouvelle ArrayList<>()
+    PRIVÉ STATIC FINAL long serialVersionUID = 1L
 
     // Constructeur
-    CONSTRUCTEUR Image(String chemin)
-        chargerImage(chemin)
-        this.nom = extraireNomFichier(chemin)
+    CONSTRUCTEUR Image()
+        // Constructeur par défaut
     FIN CONSTRUCTEUR
 
-    // Méthodes privées
-    PRIVÉ VOID chargerImage(String chemin)
+    /**
+     * Méthode de sérialisation personnalisée
+     * Seul le chemin de l'image est sauvegardé
+     */
+    PRIVÉ VOID writeObject(ObjectOutputStream out) THROWS IOException
+        out.defaultWriteObject() // Sauvegarde uniquement le chemin
+    FIN MÉTHODE
+
+    /**
+     * Méthode de désérialisation personnalisée
+     * - Restaure le chemin
+     * - Réinitialise la liste des observateurs
+     * - Recharge l'image JavaFX via le chemin, si celui-ci est défini
+     */
+    PRIVÉ VOID readObject(ObjectInputStream in) THROWS IOException, ClassNotFoundException
+        in.defaultReadObject() // Charge le chemin
+
+        // Réinitialiser les collections transientes
+        observers = nouvelle ArrayList<>()
+
+        // Recharger l'image si un chemin est défini
+        SI (chemin n'est pas null ET chemin n'est pas vide) ALORS
+            ESSAYER
+                File file = nouveau File(chemin)
+                SI (file existe) ALORS
+                    String fileUrl = file.toURI().toString()
+                    this.imageJavaFX = nouvelle javafx.scene.image.Image(fileUrl)
+                FIN SI
+            ATTRAPER (Exception e)
+                Afficher "Erreur lors du rechargement de l'image: " + e.getMessage()
+            FIN ESSAYER
+        FIN SI
+    FIN MÉTHODE
+
+    /**
+     * Charge une image en utilisant un chemin de fichier
+     * - Met à jour le chemin stocké
+     * - Convertit le chemin en URL et charge l'image JavaFX
+     * - Notifie les observateurs du changement
+     */
+    PUBLIC VOID chargerImage(String chemin)
+        this.chemin = chemin // Mémorisation du chemin
+
         ESSAYER
-            this.donnees = ImageIO.read(new File(chemin))
-            this.largeur = donnees.getWidth()
-            this.hauteur = donnees.getHeight()
-        ATTRAPER (IOException e)
-            // Gestion de l'erreur de chargement
-            this.donnees = creerImageVide()
-            this.largeur = 0
-            this.hauteur = 0
+            // Conversion du chemin en URL de fichier
+            File file = nouveau File(chemin)
+            String fileUrl = file.toURI().toString()
+
+            // Chargement de l'image avec JavaFX
+            this.imageJavaFX = nouvelle javafx.scene.image.Image(fileUrl)
+
+            // Notification des observateurs
+            notifyObservers()
+        ATTRAPER (Exception e)
+            Afficher "Erreur lors du chargement de l'image: " + e.getMessage()
         FIN ESSAYER
     FIN MÉTHODE
 
-    PRIVÉ String extraireNomFichier(String chemin)
-        // Extrait le nom du fichier à partir du chemin complet
-        RETOURNER nouveau File(chemin).getName()
+    /**
+     * Retourne l'image JavaFX chargée
+     */
+    PUBLIC javafx.scene.image.Image getJavaFXImage()
+        RETOURNER imageJavaFX
     FIN MÉTHODE
 
-    PRIVÉ BufferedImage creerImageVide()
-        RETOURNER nouvelle BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB)
+    /**
+     * Retourne le chemin du fichier image
+     */
+    PUBLIC String getChemin()
+        RETOURNER chemin
     FIN MÉTHODE
 
-    // Getters
-    PUBLIC BufferedImage getDonnees()
-        RETOURNER donnees
+    /**
+     * Ajoute un observateur à la liste
+     */
+    PUBLIC VOID attach(Observer observer)
+        observers.add(observer)
     FIN MÉTHODE
 
-    PUBLIC String getNom()
-        RETOURNER nom
+    /**
+     * Retire un observateur de la liste
+     */
+    PUBLIC VOID detach(Observer observer)
+        observers.remove(observer)
     FIN MÉTHODE
 
-    PUBLIC int getLargeur()
-        RETOURNER largeur
-    FIN MÉTHODE
-
-    PUBLIC int getHauteur()
-        RETOURNER hauteur
-    FIN MÉTHODE
-
-    // Méthodes utilitaires
-    PUBLIC boolean estValide()
-        RETOURNER donnees != null ET largeur > 0 ET hauteur > 0
+    /**
+     * Notifie tous les observateurs du changement en passant l'instance courante
+     */
+    PUBLIC VOID notifyObservers()
+        POUR CHAQUE Observer observer DANS observers FAIRE
+            observer.update(this)
+        FIN POUR
     FIN MÉTHODE
 FIN CLASSE
 
@@ -121,43 +497,58 @@ CLASSE PerspectiveMemento IMPLÉMENTE Serializable
 FIN CLASSE
 
 /**
- * Classe qui gère la visualisation d'une image avec des paramètres d'affichage
- * - Implémente Subject pour notifier les vues des changements (pattern Observer)
- * - Implémente Serializable pour permettre la sauvegarde de l'état
- * - Utilise le pattern Memento pour gérer les sauvegardes d'état
+ * Classe qui représente une perspective d'affichage d'une image
+ * Implémente Subject pour le pattern Observer et Serializable pour la persistance
  */
 CLASSE Perspective IMPLÉMENTE Subject, Serializable
     // Attributs
-    PRIVÉ double facteurEchelle
-    PRIVÉ int positionX
-    PRIVÉ int positionY
+    PRIVÉ TRANSIENT DoubleProperty facteurEchelle
+    PRIVÉ TRANSIENT IntegerProperty positionX
+    PRIVÉ TRANSIENT IntegerProperty positionY
     PRIVÉ Image image
-    PRIVÉ List<Observer> observers = nouvelle ArrayList<>()
+    PRIVÉ TRANSIENT List<Observer> observers = nouvelle ArrayList<>()
+    PRIVÉ STATIC FINAL long serialVersionUID = 1L
 
     // Constructeur
     CONSTRUCTEUR Perspective(Image image)
         this.image = image
-        this.facteurEchelle = 1.0
-        this.positionX = 0
-        this.positionY = 0
+        this.facteurEchelle = nouveau SimpleDoubleProperty(1.0)
+        this.positionX = nouveau SimpleIntegerProperty(0)
+        this.positionY = nouveau SimpleIntegerProperty(0)
     FIN CONSTRUCTEUR
 
     // Méthodes du pattern Memento
     PUBLIC PerspectiveMemento createMemento()
-        RETOURNER nouveau PerspectiveMemento(facteurEchelle, positionX, positionY)
+        RETURN nouveau PerspectiveMemento(facteurEchelle.get(), positionX.get(), positionY.get())
     FIN MÉTHODE
 
     PUBLIC VOID setMemento(PerspectiveMemento memento)
-        this.facteurEchelle = memento.getFacteurEchelle()
-        this.positionX = memento.getPositionX()
-        this.positionY = memento.getPositionY()
+        this.facteurEchelle.set(memento.getFacteurEchelle())
+        this.positionX.set(memento.getPositionX())
+        this.positionY.set(memento.getPositionY())
         notifyObservers()
+    FIN MÉTHODE
+
+    // Méthodes de sérialisation personnalisées
+    PRIVÉ VOID writeObject(ObjectOutputStream out) THROWS IOException
+        out.defaultWriteObject()
+        out.writeDouble(facteurEchelle.get())
+        out.writeInt(positionX.get())
+        out.writeInt(positionY.get())
+    FIN MÉTHODE
+
+    PRIVÉ VOID readObject(ObjectInputStream in) THROWS IOException, ClassNotFoundException
+        in.defaultReadObject()
+        facteurEchelle = nouveau SimpleDoubleProperty(in.readDouble())
+        positionX = nouveau SimpleIntegerProperty(in.readInt())
+        positionY = nouveau SimpleIntegerProperty(in.readInt())
+        observers = nouvelle ArrayList<>()
     FIN MÉTHODE
 
     // Méthodes du pattern Observer
     @OVERRIDE
     PUBLIC VOID attach(Observer observer)
-        SI NON observers.contains(observer) ALORS
+        SI (NON observers.contains(observer)) ALORS
             observers.add(observer)
         FIN SI
     FIN MÉTHODE
@@ -176,13 +567,13 @@ CLASSE Perspective IMPLÉMENTE Subject, Serializable
 
     // Setters avec notification
     PUBLIC VOID setFacteurEchelle(double facteur)
-        this.facteurEchelle = facteur
+        this.facteurEchelle.set(facteur)
         notifyObservers()
     FIN MÉTHODE
 
     PUBLIC VOID setPosition(int x, int y)
-        this.positionX = x
-        this.positionY = y
+        this.positionX.set(x)
+        this.positionY.set(y)
         notifyObservers()
     FIN MÉTHODE
 
@@ -192,14 +583,27 @@ CLASSE Perspective IMPLÉMENTE Subject, Serializable
     FIN MÉTHODE
 
     PUBLIC double getFacteurEchelle()
-        RETOURNER facteurEchelle
+        RETURN facteurEchelle.get()
     FIN MÉTHODE
 
     PUBLIC int getPositionX()
-        RETOURNER positionX
+        RETURN positionX.get()
     FIN MÉTHODE
 
     PUBLIC int getPositionY()
-        RETOURNER positionY
+        RETURN positionY.get()
+    FIN MÉTHODE
+
+    // Accesseurs de propriétés
+    PUBLIC DoubleProperty facteurEchelleProperty()
+        RETURN facteurEchelle
+    FIN MÉTHODE
+
+    PUBLIC IntegerProperty positionXProperty()
+        RETURN positionX
+    FIN MÉTHODE
+
+    PUBLIC IntegerProperty positionYProperty()
+        RETURN positionY
     FIN MÉTHODE
 FIN CLASSE

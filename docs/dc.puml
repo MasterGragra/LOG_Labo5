@@ -8,12 +8,16 @@ skinparam ranksep 100
 skinparam shadowing false
 
 package "modele" #E8F5E9 {
-  class Image implements Subject {
+  class Image implements Subject, Serializable {
     -chemin: String
-    -imageJavaFX: javafx.scene.image.Image
-    -observers: List<Observer>
+    -transient imageJavaFX: javafx.scene.image.Image
+    -transient observers: List<Observer>
+    -serialVersionUID: long
     +chargerImage(chemin : String)
     +getJavaFXImage(): javafx.scene.image.Image
+    +getChemin(): String
+    -writeObject(out: ObjectOutputStream)
+    -readObject(in: ObjectInputStream)
     +attach(observer: Observer)
     +detach(observer: Observer)
     +notifyObservers()
@@ -21,17 +25,21 @@ package "modele" #E8F5E9 {
   note left of Image
     Représente l'image originale
     Sujet dans le pattern Observer
+    Sérialisable pour la persistence
   endnote
 
   class Perspective implements Subject, Serializable {
-    -facteurEchelle: DoubleProperty
-    -positionX: IntegerProperty
-    -positionY: IntegerProperty
+    -transient facteurEchelle: DoubleProperty
+    -transient positionX: IntegerProperty
+    -transient positionY: IntegerProperty
     -image: Image
-    -observers: List<Observer>
+    -transient observers: List<Observer>
+    -serialVersionUID: long
     +Perspective(image: Image)
     +createMemento(): PerspectiveMemento
     +setMemento(memento: PerspectiveMemento)
+    -writeObject(out: ObjectOutputStream)
+    -readObject(in: ObjectInputStream)
     +setFacteurEchelle(facteur: double)
     +setPosition(x: int, y: int)
     +getImage(): Image
@@ -248,7 +256,7 @@ package "memento" #FFEBEE {
     +chargerEtat(fichier: String): List<Perspective>
     +fichierExiste(fichier: String): boolean
   }
-  note right of Sauvegarde
+  note bottom of Sauvegarde
     Utilise la sérialisation Java pour
     sauvegarder/charger les perspectives
   endnote
@@ -268,20 +276,24 @@ package "application" #E0F7FA {
   endnote
 
   class ApplicationController {
-      -perspectives: List<Perspective>
-      -vues: Map<String, VueAbstraite>
-      -imageController: ImageController
-      -sauvegarde: Sauvegarde
-      +initialiserModeles()
-      +initialiserVues()
-      +creerInterface(): Parent
-      +chargerImage(cheminImage: String)
-      +getPerspectives(): List<Perspective>
-      +getVues(): Map<String, VueAbstraite>
+    -perspectives: List<Perspective>
+    -vues: Map<String, VueAbstraite>
+    -imageController: ImageController
+    -sauvegarde: Sauvegarde
+    +initialiserModeles()
+    +initialiserVues()
+    +creerInterface(): Parent
+    +sauvegarderEtat(fichier: String)
+    +chargerSauvegarde(fichier: String)
+    +chargerImage(cheminImage: String)
+    +getPerspectives(): List<Perspective>
+    +getVues(): Map<String, VueAbstraite>
   }
   note left of ApplicationController
     Contrôleur principal de l'application
     Coordonne les modèles, vues et contrôleurs
+    Sauvegarde uniquement la perspective secondaire
+    Charge et applique à la vue principale
   endnote
 
   class GestionnaireInterface {
@@ -314,7 +326,7 @@ ControleTranslation -- CommandManager : utilise >
 Perspective -- ImageController : manipule >
 
 ' Relations d'application
-ApplicationController -- Sauvegarde : utilise >
+ApplicationController "1" -- "1" Sauvegarde : utilise >
 ApplicationController "1" o-- "*" Perspective
 ApplicationController "1" -- "1" ImageController : utilise >
 ApplicationController "1" o-- "*" VueAbstraite : gère >

@@ -16,6 +16,7 @@ import vue.VueSecondaire;
 import vue.VueFixe;
 import vue.VueInteractive;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -177,6 +178,73 @@ public class ApplicationController {
         });
 
         return root;
+    }
+
+    /**
+     * Sauvegarde uniquement l'état de la perspective de la VueSecondaire
+     * @param fichier chemin du fichier de sauvegarde
+     */
+    public void sauvegarderEtat(String fichier) {
+        try {
+            // Créer une liste temporaire contenant uniquement la perspective de la VueSecondaire
+            List<Perspective> perspectiveASauvegarder = new ArrayList<>();
+            if (perspectives.size() >= 2) {
+
+                // Sauvegarde uniquement la perspective secondaire
+                perspectiveASauvegarder.add(perspectives.get(1));
+                sauvegarde.sauvegarderEtat(perspectiveASauvegarder, fichier);
+                System.out.println("Perspective secondaire sauvegardée dans " + fichier);
+            } else {
+                System.err.println("Impossible de sauvegarder : la perspective secondaire n'existe pas");
+            }
+        } catch (IOException e) {
+            System.err.println("Erreur lors de la sauvegarde : " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Charge une perspective sauvegardée et l'applique à la VuePrincipale
+     * @param fichier chemin du fichier de sauvegarde
+     */
+    public void chargerSauvegarde(String fichier) {
+        try {
+            if (sauvegarde.fichierExiste(fichier)) {
+                List<Perspective> perspectivesChargees = sauvegarde.chargerEtat(fichier);
+                if (!perspectivesChargees.isEmpty()) {
+                    // Récupérer la perspective chargée
+                    Perspective perspectiveChargee = perspectivesChargees.get(0);
+
+                    // Appliquer à la perspective principale (index 0)
+                    if (!perspectives.isEmpty()) {
+                        Perspective perspectivePrincipale = perspectives.get(0);
+
+                        // Appliquer la position et le zoom de la perspective chargée
+                        perspectivePrincipale.setPosition(perspectiveChargee.getPositionX(), perspectiveChargee.getPositionY());
+                        perspectivePrincipale.setFacteurEchelle(perspectiveChargee.getFacteurEchelle());
+
+                        // Si l'image est différente, la charger également
+                        if (perspectiveChargee.getImage().getChemin() != null &&
+                                !perspectiveChargee.getImage().getChemin().equals(perspectivePrincipale.getImage().getChemin())) {
+                            perspectivePrincipale.getImage().chargerImage(perspectiveChargee.getImage().getChemin());
+                        }
+
+                        // Mettre à jour la vue principale
+                        VueAbstraite vuePrincipale = vues.get("principale");
+                        if (vuePrincipale != null) {
+                            Platform.runLater(vuePrincipale::renduInitial);
+                        }
+
+                        System.out.println("Perspective secondaire chargée et appliquée à la vue principale");
+                    }
+                }
+            } else {
+                System.err.println("Le fichier de sauvegarde n'existe pas : " + fichier);
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            System.err.println("Erreur lors du chargement : " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     /**

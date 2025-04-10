@@ -5,6 +5,10 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import memento.PerspectiveMemento;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,11 +19,12 @@ import vue.Observer;
  * Implémente Subject pour le pattern Observer et Serializable pour la persistance
  */
 public class Perspective implements Subject, Serializable {
-    private DoubleProperty facteurEchelle;
-    private IntegerProperty positionX;
-    private IntegerProperty positionY;
+    private transient DoubleProperty facteurEchelle;
+    private transient IntegerProperty positionX;
+    private transient IntegerProperty positionY;
     private Image image;
-    private final List<Observer> observers = new ArrayList<>();
+    private transient List<Observer> observers = new ArrayList<>();
+    private static final long serialVersionUID = 1L;
 
     /**
      * Constructeur
@@ -52,9 +57,40 @@ public class Perspective implements Subject, Serializable {
     }
 
     /**
-     * Ajoute un observateur à la liste des observateurs
-     * @param observer l'observateur à ajouter
+     * Méthode de sérialisation personnalisée pour écrire les propriétés
+     * @param out le flux de sortie
+     * @throws IOException en cas d'erreur d'écriture
      */
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        out.defaultWriteObject(); // Écriture des champs normaux
+
+        // Écrire les valeurs actuelles des propriétés
+        out.writeDouble(facteurEchelle.get());
+        out.writeInt(positionX.get());
+        out.writeInt(positionY.get());
+    }
+
+    /**
+     * Méthode de désérialisation personnalisée pour lire les propriétés
+     * @param in le flux d'entrée
+     * @throws IOException en cas d'erreur de lecture
+     * @throws ClassNotFoundException si la classe n'est pas trouvée
+     */
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject(); // Lecture des champs normaux
+
+        // Recréer les propriétés JavaFX
+        facteurEchelle = new SimpleDoubleProperty(in.readDouble());
+        positionX = new SimpleIntegerProperty(in.readInt());
+        positionY = new SimpleIntegerProperty(in.readInt());
+
+        // Réinitialiser la liste des observers
+        observers = new ArrayList<>();
+    }
+        /**
+         * Ajoute un observateur à la liste des observateurs
+         * @param observer l'observateur à ajouter
+         */
     @Override
     public void attach(Observer observer) {
         if (!observers.contains(observer)) {

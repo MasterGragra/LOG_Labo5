@@ -11,8 +11,11 @@ import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import vue.VueAbstraite;
+
+import java.io.File;
 
 /**
  * Gestion de l'interface utilisateur (fenêtres, menus, etc.)
@@ -20,6 +23,7 @@ import vue.VueAbstraite;
 public class GestionnaireInterface {
     private Stage stage;
     private Scene scene;
+    private ApplicationController controller;
 
     /**
      * Crée une fenêtre avec le titre spécifié
@@ -45,6 +49,28 @@ public class GestionnaireInterface {
         MenuItem itemOuvrir = new MenuItem("Ouvrir");
         MenuItem itemSauvegarder = new MenuItem("Sauvegarder");
         MenuItem itemQuitter = new MenuItem("Quitter");
+
+        itemOuvrir.setOnAction(event -> {
+            // Ouvrir un sélecteur de fichier
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Ouvrir une sauvegarde");
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Fichier de sauvegarde", "*.dat"));
+            File fichier = fileChooser.showOpenDialog(stage);
+            if (fichier != null) {
+                controller.chargerSauvegarde(fichier.getAbsolutePath());
+            }
+        });
+
+        itemSauvegarder.setOnAction(event -> {
+            // Ouvrir un sélecteur de fichier
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Sauvegarder l'état");
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Fichier de sauvegarde", "*.dat"));
+            File fichier = fileChooser.showSaveDialog(stage);
+            if (fichier != null) {
+                controller.sauvegarderEtat(fichier.getAbsolutePath());
+            }
+        });
         menuFichier.getItems().addAll(itemOuvrir, itemSauvegarder, itemQuitter);
 
         // Menu Edition avec fonctionnalités Annuler/Refaire
@@ -124,5 +150,9 @@ public class GestionnaireInterface {
         });
 
         System.out.println("Raccourcis clavier configurés globalement");
+    }
+
+    public void setController(ApplicationController controller) {
+        this.controller = controller;
     }
 }

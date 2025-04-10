@@ -34,6 +34,9 @@ public class ApplicationMain extends Application {
             controller = new ApplicationController();
             gestionnaireInterface = new GestionnaireInterface();
 
+            // Connecter le contrôleur à l'interface
+            gestionnaireInterface.setController(controller);
+
             // Créer l'interface programmatiquement
             Parent root = controller.creerInterface();
 

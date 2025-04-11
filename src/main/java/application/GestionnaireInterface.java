@@ -47,10 +47,25 @@ public class GestionnaireInterface {
         // Menu Fichier
         Menu menuFichier = new Menu("Fichier");
         MenuItem itemOuvrir = new MenuItem("Ouvrir");
+        MenuItem itemCharger = new MenuItem("Charger");
         MenuItem itemSauvegarder = new MenuItem("Sauvegarder");
         MenuItem itemQuitter = new MenuItem("Quitter");
 
+        // Action pour ouvrir une image
         itemOuvrir.setOnAction(event -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Ouvrir une image");
+            fileChooser.getExtensionFilters().addAll(
+                    new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.bmp", "*.gif")
+            );
+            File fichier = fileChooser.showOpenDialog(stage);
+            if (fichier != null) {
+                controller.chargerImage(fichier.getAbsolutePath());
+            }
+        });
+
+        // Action pour charger une sauvegarde
+        itemCharger.setOnAction(event -> {
             // Ouvrir un sélecteur de fichier
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Ouvrir une sauvegarde");
@@ -61,6 +76,7 @@ public class GestionnaireInterface {
             }
         });
 
+        // Action pour sauvegarder l'état
         itemSauvegarder.setOnAction(event -> {
             // Ouvrir un sélecteur de fichier
             FileChooser fileChooser = new FileChooser();
@@ -71,7 +87,7 @@ public class GestionnaireInterface {
                 controller.sauvegarderEtat(fichier.getAbsolutePath());
             }
         });
-        menuFichier.getItems().addAll(itemOuvrir, itemSauvegarder, itemQuitter);
+        menuFichier.getItems().addAll(itemOuvrir, itemCharger, itemSauvegarder, itemQuitter);
 
         // Menu Edition avec fonctionnalités Annuler/Refaire
         Menu menuEdition = new Menu("Édition");
@@ -96,13 +112,6 @@ public class GestionnaireInterface {
         // Ajouter les éléments au menu Édition
         menuEdition.getItems().addAll(itemAnnuler, itemRefaire);
 
-        // Menu Affichage
-        /*
-        Menu menuAffichage = new Menu("Affichage");
-        MenuItem itemZoom = new MenuItem("Mode Zoom");
-        MenuItem itemTranslation = new MenuItem("Mode Translation");
-        menuAffichage.getItems().addAll(itemZoom, itemTranslation);
-        */
 
         // Ajouter les menus à la barre de menu
         menuBar.getMenus().addAll(menuFichier, menuEdition);

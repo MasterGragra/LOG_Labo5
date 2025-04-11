@@ -248,13 +248,20 @@ public class ApplicationController {
     }
 
     /**
-     * Charge une image dans le modèle
+     * Charge une image dans le modèle et force l'actualisation des vues
      * @param cheminImage Chemin de l'image à charger
      */
     public void chargerImage(String cheminImage) {
         if (!perspectives.isEmpty()) {
             Perspective perspective = perspectives.getFirst();
             perspective.getImage().chargerImage(cheminImage);
+
+            // Forcer la mise à jour des vues
+            Platform.runLater(() -> {
+                for (VueAbstraite vue : vues.values()) {
+                    vue.renduInitial();
+                }
+            });
         }
     }
 

@@ -294,6 +294,7 @@ package "application" #E0F7FA {
     Coordonne les modèles, vues et contrôleurs
     Sauvegarde uniquement la perspective secondaire
     Charge et applique à la vue principale
+    Charge l'image dans toute les perspectives
   endnote
 
   class GestionnaireInterface {
@@ -303,6 +304,7 @@ package "application" #E0F7FA {
     +creerMenu(root: Parent): MenuBar
     +ajouterVue(conteneur: Pane, vue: VueAbstraite)
     +configurerRaccourcisClavier(scene: Scene)
+    +setController(controller: ApplicationController)
   }
   note right of GestionnaireInterface
     Gestion de l'interface utilisateur

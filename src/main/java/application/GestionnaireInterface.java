@@ -50,6 +50,10 @@ public class GestionnaireInterface {
         return instance;
     }
 
+    public void setPerspectiveActive(Perspective perspective) {
+        this.perspectiveActive = perspective;
+    }
+
     /**
      * Crée une fenêtre avec le titre spécifié
      * @param titre Titre de la fenêtre
@@ -263,9 +267,5 @@ public class GestionnaireInterface {
                 }
             }
         });
-    }
-
-    public void setPerspectiveActive(Perspective perspective) {
-        this.perspectiveActive = perspective;
     }
 }

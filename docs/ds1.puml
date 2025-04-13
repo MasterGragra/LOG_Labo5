@@ -3,13 +3,12 @@ title Diagramme de séquence de la commande zoom
 autonumber
 
 actor Utilisateur
-participant "StackPane\n(conteneur)" as Pane
-participant "ImageController" as Controller
-participant "ControleZoom" as Controle
-participant "CommandManager" as CmdMgr
-participant "CommandeZoom" as Cmd
-participant "Perspective" as Model
-participant "VueAbstraite" as Vue
+participant ":StackPane" as Pane
+participant ":ImageController" as Controller
+participant ":ControleZoom" as Controle
+participant ":CommandManager" as CmdMgr
+participant ":Perspective" as Model
+participant ":VuePrincipale" as Vue
 
 Utilisateur -> Pane : scroll
 activate Pane
@@ -31,10 +30,8 @@ activate Pane
             Controle -> Controle : facteurZoomInitial = perspective.getFacteurEchelle()
             Controle -> Controle : facteurZoomFinal = facteurZoomInitial + (deltaY * 0.01)
 
-            Controle -> Cmd : <<create>>(perspective, facteurZoomFinal)
-            activate Cmd
-                Cmd --> Controle
-            deactivate Cmd
+            create ":CommandeZoom" as Cmd
+            Controle -> Cmd : new CommandeZoom(perspective, facteurZoomFinal)
 
             Controle -> Cmd : setFacteurInitial(facteurZoomInitial)
             activate Cmd

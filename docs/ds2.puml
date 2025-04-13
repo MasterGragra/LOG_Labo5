@@ -2,11 +2,11 @@
 autonumber
 title Diagramme de séquence de l'annulation d'une commande zoom
 actor Utilisateur
-participant "GestionnaireInterface" as GUI
-participant "CommandManager" as CmdMgr
-participant "CommandeZoom" as Cmd
-participant "Perspective" as Model
-participant "VueAbstraite" as Vue
+participant ":GestionnaireInterface" as GUI
+participant ":CommandManager" as CmdMgr
+participant ":CommandeZoom" as Cmd
+participant ":Perspective" as Model
+participant ":VuePrincipale" as Vue
 
 Utilisateur -> GUI : clique sur bouton "Annuler" \nou utilise raccourci Ctrl+Z
 activate GUI

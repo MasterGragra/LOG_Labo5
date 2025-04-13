@@ -56,6 +56,7 @@ public class ApplicationMain extends Application {
             // Ajouter le panneau principal
             Scene scene = new Scene(borderPane, 1200, 800);
             gestionnaireInterface.configurerRaccourcisClavier(scene);
+            controller.activerRaccourcisClavier(scene);
 
             // Créer la scène et la fenêtre
             primaryStage.setTitle("Éditeur d'images");

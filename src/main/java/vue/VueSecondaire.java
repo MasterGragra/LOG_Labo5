@@ -1,5 +1,6 @@
 package vue;
 
+import application.GestionnaireInterface;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import modele.Perspective;
@@ -18,6 +19,8 @@ public class VueSecondaire extends VueInteractive {
      */
     public VueSecondaire(Perspective perspective) {
         super(perspective);
+
+        GestionnaireInterface.getInstance().ajouterMenuCopierColler(pane, this.perspective);
 
         // Créer l'ImageView
         imageView = new ImageView();

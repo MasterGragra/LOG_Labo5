@@ -3,6 +3,7 @@ package application;
 import controleur.ImageController;
 import javafx.application.Platform;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -279,5 +280,15 @@ public class ApplicationController {
      */
     public Map<String, VueAbstraite> getVues() {
         return vues;
+    }
+
+    public void activerRaccourcisClavier(Scene scene) {
+        if (vues.get("principale") instanceof VueInteractive vuePrincipale) {
+            GestionnaireInterface.getInstance().ajouterRaccourcisClavier(scene, vuePrincipale.getPerspective());
+        }
+
+        if (vues.get("secondaire") instanceof VueInteractive vueSecondaire) {
+            GestionnaireInterface.getInstance().ajouterRaccourcisClavier(scene, vueSecondaire.getPerspective());
+        }
     }
 }

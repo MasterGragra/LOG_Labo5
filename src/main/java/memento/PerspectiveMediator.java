@@ -1,11 +1,9 @@
 package memento;
 
-import memento.PerspectiveMemento;
-
 /**
  * Temporarily stocks state for perspective for copy-paste
  */
-public class PerspectiveClipboard {
+public class PerspectiveMediator implements Mediator {
     private static PerspectiveMemento memento = null;
 
     public static void set(PerspectiveMemento m) {

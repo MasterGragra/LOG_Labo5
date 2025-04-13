@@ -1,7 +1,7 @@
 package commande;
 
 import application.GestionnaireInterface;
-import memento.PerspectiveClipboard;
+import memento.PerspectiveMediator;
 import memento.PerspectiveMemento;
 import modele.Perspective;
 
@@ -22,12 +22,12 @@ public class CommandeColler implements Command {
         System.out.println("copierZoom = " + GestionnaireInterface.getInstance().getCopierZoom());
         System.out.println("copierCoords = " + GestionnaireInterface.getInstance().getCopierCoords());
 
-        if (mementoAvant == null && PerspectiveClipboard.isEmpty()) {
+        if (mementoAvant == null && PerspectiveMediator.isEmpty()) {
             return;
         }
 
         mementoAvant = cible.createMemento();
-        PerspectiveMemento memento = PerspectiveClipboard.getMemento();
+        PerspectiveMemento memento = PerspectiveMediator.getMemento();
 
         if (GestionnaireInterface.getInstance().getCopierZoom()) {
             cible.setFacteurEchelle(memento.getFacteurEchelle());

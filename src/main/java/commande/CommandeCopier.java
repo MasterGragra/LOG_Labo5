@@ -1,6 +1,6 @@
 package commande;
 
-import memento.PerspectiveClipboard;
+import memento.PerspectiveMediator;
 import memento.PerspectiveMemento;
 import modele.Perspective;
 
@@ -23,7 +23,7 @@ public class CommandeCopier implements Command {
     @Override
     public void execute() {
         PerspectiveMemento memento = source.createMemento();
-        PerspectiveClipboard.set(memento);
+        PerspectiveMediator.set(memento);
 
         System.out.println("Copied: zoom=" + source.getFacteurEchelle() +
                 " coords=(" + source.getPositionX() + ", " + source.getPositionY() + ")");

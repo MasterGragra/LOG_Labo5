@@ -19,7 +19,7 @@ import java.io.File;
 import commande.CommandManager;
 import commande.CommandeColler;
 import commande.CommandeCopier;
-import memento.PerspectiveClipboard;
+import memento.PerspectiveMediator;
 import modele.Perspective;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -243,7 +243,7 @@ public class GestionnaireInterface {
         });
 
         node.setOnContextMenuRequested(event -> {
-            itemColler.setDisable(PerspectiveClipboard.isEmpty());
+            itemColler.setDisable(PerspectiveMediator.isEmpty());
             menu.getItems().setAll(itemCopier, itemColler);
             menu.show(node, event.getScreenX(), event.getScreenY());
         });
@@ -260,7 +260,7 @@ public class GestionnaireInterface {
                 }
                 event.consume();
             } else if (event.isControlDown() && event.getCode() == KeyCode.V) {
-                if (perspectiveActive != null && !PerspectiveClipboard.isEmpty()) {
+                if (perspectiveActive != null && !PerspectiveMediator.isEmpty()) {
                     CommandeColler commande = new CommandeColler(perspectiveActive);
                     CommandManager.getInstance().executeCommand(commande);
                     event.consume();

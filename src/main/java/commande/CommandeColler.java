@@ -21,6 +21,7 @@ public class CommandeColler implements Command {
     public void execute() {
         System.out.println("copierZoom = " + GestionnaireInterface.getInstance().getCopierZoom());
         System.out.println("copierCoords = " + GestionnaireInterface.getInstance().getCopierCoords());
+
         if (mementoAvant == null && PerspectiveClipboard.isEmpty()) {
             return;
         }

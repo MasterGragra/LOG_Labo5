@@ -1,5 +1,6 @@
 package vue;
 
+import application.GestionnaireInterface;
 import controleur.ControleSouris;
 import modele.Perspective;
 
@@ -20,6 +21,12 @@ public abstract class VueInteractive extends VueAbstraite {
 
         // Activer le clipping pour empêcher le débordement
         activerClipping();
+
+        pane.setFocusTraversable(true);
+        pane.setOnMouseEntered(e -> {
+            pane.requestFocus();
+            GestionnaireInterface.getInstance().setPerspectiveActive(this.perspective);
+        });
     }
 
     /**

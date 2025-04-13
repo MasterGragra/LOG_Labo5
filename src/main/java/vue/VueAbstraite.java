@@ -57,4 +57,8 @@ public abstract class VueAbstraite implements Observer {
     public void renduInitial() {
         dessiner();
     }
+
+    public Perspective getPerspective() {
+        return perspective;
+    }
 }

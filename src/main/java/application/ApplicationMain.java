@@ -32,7 +32,7 @@ public class ApplicationMain extends Application {
         try {
             // Initialiser les composants principaux
             controller = new ApplicationController();
-            gestionnaireInterface = new GestionnaireInterface();
+            gestionnaireInterface = GestionnaireInterface.getInstance();
 
             // Connecter le contrôleur à l'interface
             gestionnaireInterface.setController(controller);
@@ -56,6 +56,7 @@ public class ApplicationMain extends Application {
             // Ajouter le panneau principal
             Scene scene = new Scene(borderPane, 1200, 800);
             gestionnaireInterface.configurerRaccourcisClavier(scene);
+            controller.activerRaccourcisClavier(scene);
 
             // Créer la scène et la fenêtre
             primaryStage.setTitle("Éditeur d'images");

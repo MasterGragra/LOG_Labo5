@@ -1,6 +1,5 @@
 package application;
 
-import commande.CommandManager;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Menu;
@@ -17,6 +16,16 @@ import vue.VueAbstraite;
 
 import java.io.File;
 
+import commande.CommandManager;
+import commande.CommandeColler;
+import commande.CommandeCopier;
+import memento.PerspectiveClipboard;
+import modele.Perspective;
+import javafx.scene.Node;
+import javafx.scene.control.*;
+import javafx.scene.input.KeyEvent;
+import java.util.Optional;
+
 /**
  * Gestion de l'interface utilisateur (fenêtres, menus, etc.)
  */
@@ -24,6 +33,22 @@ public class GestionnaireInterface {
     private Stage stage;
     private Scene scene;
     private ApplicationController controller;
+
+    private boolean copierZoom = true;
+    private boolean copierCoords = true;
+    private static GestionnaireInterface instance = new GestionnaireInterface();
+    private Perspective perspectiveActive;
+
+    public boolean getCopierZoom() {
+        return copierZoom;
+    }
+
+    public boolean getCopierCoords() {
+        return copierCoords;
+    }
+    public static GestionnaireInterface getInstance() {
+        return instance;
+    }
 
     /**
      * Crée une fenêtre avec le titre spécifié
@@ -93,6 +118,7 @@ public class GestionnaireInterface {
         Menu menuEdition = new Menu("Édition");
         MenuItem itemAnnuler = new MenuItem("Undo");
         MenuItem itemRefaire = new MenuItem("Redo");
+        MenuItem itemParametresCopie = new MenuItem("Paramètres de copie");
 
         // Récupérer l'instance du CommandManager
         CommandManager commandManager = CommandManager.getInstance();
@@ -100,6 +126,7 @@ public class GestionnaireInterface {
         // Associer les actions aux éléments du menu
         itemAnnuler.setOnAction(event -> commandManager.undo());
         itemRefaire.setOnAction(event -> commandManager.redo());
+        itemParametresCopie.setOnAction(e -> afficherDialogueParametresCopie());
 
         // Ajouter des raccourcis clavier
         itemAnnuler.setAccelerator(new KeyCodeCombination(KeyCode.Z, KeyCombination.CONTROL_DOWN));
@@ -110,7 +137,7 @@ public class GestionnaireInterface {
         itemRefaire.disableProperty().bind(commandManager.canRedoProperty().not());
 
         // Ajouter les éléments au menu Édition
-        menuEdition.getItems().addAll(itemAnnuler, itemRefaire);
+        menuEdition.getItems().addAll(itemAnnuler, itemRefaire, itemParametresCopie);
 
 
         // Ajouter les menus à la barre de menu
@@ -163,5 +190,82 @@ public class GestionnaireInterface {
 
     public void setController(ApplicationController controller) {
         this.controller = controller;
+    }
+
+    /**
+     * Displays a dialog box for the copy options
+     */
+    public void afficherDialogueCopie(Perspective perspective) {
+        CommandeCopier commande = new CommandeCopier(perspective, copierZoom, copierCoords);
+        CommandManager.getInstance().executeCommand(commande);
+    }
+
+    public void afficherDialogueParametresCopie() {
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Paramètres de copie");
+
+        CheckBox checkZoom = new CheckBox("Zoom");
+        checkZoom.setSelected(copierZoom);
+        CheckBox checkCoords = new CheckBox("Coordonnées");
+        checkCoords.setSelected(copierCoords);
+
+        VBox contenu = new VBox(10);
+        contenu.getChildren().addAll(new Label("Choisir les éléments à copier par défaut:"), checkZoom, checkCoords);
+        dialog.getDialogPane().setContent(contenu);
+
+        ButtonType boutonOk = new ButtonType("Valider", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(boutonOk, ButtonType.CANCEL);
+
+        Optional<ButtonType> resultat = dialog.showAndWait();
+        if (resultat.isPresent() && resultat.get() == boutonOk) {
+            copierZoom = checkZoom.isSelected();
+            copierCoords = checkCoords.isSelected();
+        }
+    }
+
+    /**
+     * Adds a contextual menu for copy paste
+     */
+    public void ajouterMenuCopierColler(Node node, Perspective perspective) {
+        ContextMenu menu = new ContextMenu();
+
+        MenuItem itemCopier = new MenuItem("Copier");
+        MenuItem itemColler = new MenuItem("Coller");
+
+        itemCopier.setOnAction(e -> afficherDialogueCopie(perspective));
+        itemColler.setOnAction(e -> {
+            CommandeColler commande = new CommandeColler(perspective);
+            CommandManager.getInstance().executeCommand(commande);
+        });
+
+        node.setOnContextMenuRequested(event -> {
+            itemColler.setDisable(PerspectiveClipboard.isEmpty());
+            menu.getItems().setAll(itemCopier, itemColler);
+            menu.show(node, event.getScreenX(), event.getScreenY());
+        });
+    }
+
+    /**
+     * Adds the Ctrl+C and Ctrl+V shortcuts
+     */
+    public void ajouterRaccourcisClavier(Scene scene, Perspective perspective) {
+        scene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+            if (event.isControlDown() && event.getCode() == KeyCode.C) {
+                if (perspectiveActive != null) {
+                    afficherDialogueCopie(perspectiveActive);
+                }
+                event.consume();
+            } else if (event.isControlDown() && event.getCode() == KeyCode.V) {
+                if (perspectiveActive != null && !PerspectiveClipboard.isEmpty()) {
+                    CommandeColler commande = new CommandeColler(perspectiveActive);
+                    CommandManager.getInstance().executeCommand(commande);
+                    event.consume();
+                }
+            }
+        });
+    }
+
+    public void setPerspectiveActive(Perspective perspective) {
+        this.perspectiveActive = perspective;
     }
 }

@@ -14,14 +14,14 @@
 **Justification :** Nous avons voulu mettre à jour les vues quand la perspective est modifié.
 ### Patron Command
 
-| Élément du patron | Application dans le projet                                     |
-|-------------------|----------------------------------------------------------------|
-| **Command** | Interface `Command` avec méthodes `execute()` et `undo()`      |
-| **ConcreteCommand** | `ZoomCommand`, `TranslationCommand`                            |
-| **Invoker** | `CommandManager` qui exécute les commandes                     |
-| **Client** | `ControleZoom`, `ControleTranslation` qui créent les commandes |
-| **Receiver** | `Perspective` dont l'état est modifié par les commandes        |
-| **Intérêt** | Permet l'historique d'actions avec undo/redo                   |
+| Élément du patron | Application dans le projet                                                              |
+|-------------------|-----------------------------------------------------------------------------------------|
+| **Command** | Interface `Command` avec méthodes `execute()` et `undo()`                               |
+| **ConcreteCommand** | `ZoomCommand`, `TranslationCommand`, `CommandeColler`, `CommandeCopier`                 |
+| **Invoker** | `CommandManager` qui exécute les commandes                                              |
+| **Client** | `ControleZoom`, `ControleTranslation`, `GestionnaireInterface` qui créent les commandes |
+| **Receiver** | `Perspective`et `PerscpectiveMediator` dont l'état est modifié par les commandes        |
+| **Intérêt** | Permet l'historique d'actions avec undo/redo                                            |
 
 **Justification :** Nous avons voulu que les différents types de commande soient ré-exécuté ou défate, ainsi on peut avoir un historique des actions faites.
 
@@ -45,7 +45,9 @@
 | **Originator** | `Perspective` qui crée et utilise des mementos |
 | **Caretaker** | `Sauvegarde` qui stocke les mementos |
 | **Intérêt** | Permet de sauvegarder et restaurer l'état des perspectives |
+
 **Justification :** Le patron Memento permet de capturer l’état interne d’un objet sans exposer sa structure, pour ensuite le restaurer.
+
 ### Patron Singleton 
 
 | Élément du patron | Application dans le projet                                              |
@@ -67,11 +69,11 @@
 | **Intérêt** | Sépare les données, leur présentation et les interactions utilisateur |
 
 ### Patron Médiateur
-| Élément du patron     | Application dans le projet                                            |
-|-----------------------|-----------------------------------------------------------------------|
-| **Mediator**          | `Mediator`                                                            |
-| **Colleague**         | `CommandeCopier` `CommandeColler`                                     |
-| **ConcreteMediator**  | `ImageController`, `ControleZoom`, `ControleTranslation`              |
-| **Intérêt**           |                                                                       |
+| Élément du patron     | Application dans le projet                               |
+|-----------------------|----------------------------------------------------------|
+| **Mediator**          | `Mediator`                                               |
+| **Colleague**         | `CommandeCopier`, `CommandeColler`                       |
+| **ConcreteMediator**  | `ImageController`, `ControleZoom`, `ControleTranslation` |
+| **Intérêt**           | Gère la communication entre les collègues                |
 
 **Justification :** Le patron Mediator simplifie les interactions entre les classes responsables de copier/coller en centralisant les communications.

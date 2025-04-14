@@ -103,6 +103,7 @@ package "vue" #E3F2FD {
     #activerClipping()
     +setControleSouris(controle: ControleSouris)
     +getControleSouris(): ControleSouris
+    +getPerspective(): Perspective
   }
 
   class VuePrincipale extends VueInteractive {
@@ -208,6 +209,23 @@ package "commande" #F3E5F5 {
     +undo()
   }
 
+  class CommandeCopier implements Command {
+    -source: Perspective
+    -copierZoom: boolean
+    -copierCoords: boolean
+    +CommandeCopier(source: Perspective, copierZoom: boolean, copierCoords: boolean)
+    +execute()
+    +undo()
+  }
+
+  class CommandeColler implements Command {
+    -cible: Perspective
+    -mementoAvant: PerspectiveMemento
+    +CommandeColler(cible: Perspective)
+    +execute()
+    +undo()
+  }
+
   class CommandManager << Singleton >> {
     -static instance: CommandManager
     -commandesExecutees: Stack<Command>
@@ -251,6 +269,17 @@ package "memento" #FFEBEE {
     d'une perspective pour restauration future
   endnote
 
+  class PerspectiveMediator << Singleton >> {
+    -static memento: PerspectiveMemento
+    +static set(memento: PerspectiveMemento)
+    +static getMemento(): PerspectiveMemento
+    +static isEmpty(): boolean
+  }
+  note right of PerspectiveMediator
+    Pattern Mediator: facilite le transfert d'états
+    entre perspectives pour copier-coller
+  endnote
+
   class Sauvegarde {
     +sauvegarderEtat(perspectives: List<Perspective>, fichier: String)
     +chargerEtat(fichier: String): List<Perspective>
@@ -288,6 +317,7 @@ package "application" #E0F7FA {
     +chargerImage(cheminImage: String)
     +getPerspectives(): List<Perspective>
     +getVues(): Map<String, VueAbstraite>
+    +activerRaccourcisClavier(scene: Scene)
   }
   note left of ApplicationController
     Contrôleur principal de l'application
@@ -297,18 +327,32 @@ package "application" #E0F7FA {
     Charge l'image dans toute les perspectives
   endnote
 
-  class GestionnaireInterface {
+  class GestionnaireInterface << Singleton >> {
     -stage: Stage
     -scene: Scene
+    -controller: ApplicationController
+    -copierZoom: boolean
+    -copierCoords: boolean
+    -perspectiveActive: Perspective
+    -static instance: GestionnaireInterface
+    +static getInstance(): GestionnaireInterface
     +creerFenetre(titre: String): Stage
     +creerMenu(root: Parent): MenuBar
     +ajouterVue(conteneur: Pane, vue: VueAbstraite)
     +configurerRaccourcisClavier(scene: Scene)
     +setController(controller: ApplicationController)
+    +getCopierZoom(): boolean
+    +getCopierCoords(): boolean
+    +afficherDialogueCopie(perspective: Perspective)
+    +afficherDialogueParametresCopie()
+    +ajouterMenuCopierColler(node: Node, perspective: Perspective)
+    +ajouterRaccourcisClavier(scene: Scene, perspective: Perspective)
+    +setPerspectiveActive(perspective: Perspective)
   }
   note right of GestionnaireInterface
     Gestion de l'interface utilisateur
     Création des fenêtres, menus, etc.
+    Gère aussi les interactions copier/coller
   endnote
 }
 
@@ -327,6 +371,10 @@ ControleZoom -- CommandManager : utilise >
 ControleTranslation -- CommandManager : utilise >
 Perspective -- ImageController : manipule >
 
+' Relations de commande
+CommandeCopier -- PerspectiveMediator : utilise >
+CommandeColler -- PerspectiveMediator : utilise >
+
 ' Relations d'application
 ApplicationController "1" -- "1" Sauvegarde : utilise >
 ApplicationController "1" o-- "*" Perspective
@@ -334,6 +382,7 @@ ApplicationController "1" -- "1" ImageController : utilise >
 ApplicationController "1" o-- "*" VueAbstraite : gère >
 ApplicationMain -- ApplicationController : utilise >
 ApplicationMain -- GestionnaireInterface : utilise >
+GestionnaireInterface -- CommandManager : utilise >
 
 note as N1
 Architecture MVC avec JavaFX:
@@ -345,10 +394,11 @@ end note
 note as N2
 Patrons de conception utilisés:
 - Observer: Subject/Observer pour MVC
-- Command: Pour undo/redo
+- Command: Pour undo/redo et copier/coller
 - Strategy: ControleSouris pour comportements
 - Memento: PerspectiveMemento pour sauvegarde d'état
-- Singleton: CommandManager comme gestionnaire unique
+- Singleton: CommandManager et GestionnaireInterface
+- Mediator: PerspectiveMediator pour transfert entre perspectives
 end note
 
 N1 -[hidden]-> N2
